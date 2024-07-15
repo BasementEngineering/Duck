@@ -1,0 +1,22 @@
+{
+  "name": "duck-website-vite",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.3.3",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-singlefile": "^2.0.2"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
+    "three": "^0.166.1"
+  }
+}

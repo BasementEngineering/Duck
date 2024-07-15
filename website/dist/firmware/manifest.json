@@ -1,0 +1,13 @@
+{
+    "name": "Duck Firmware",
+    "version": "2024.07.05",
+    "new_install_prompt_erase": false,
+    "builds": [
+      {
+        "chipFamily": "ESP8266",
+        "parts": [
+          { "path": "esp8266.bin", "offset": 0 }
+        ]
+      }
+    ]
+  }
