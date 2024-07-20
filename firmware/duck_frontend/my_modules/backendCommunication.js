@@ -1,4 +1,5 @@
 import { Parser, Communication_Commands } from "./parser"
+import globalContext from "./dataBuffer"
 
 const HEARTBEAT_INTERVAL=500;
 const HEARTBEAT_TIMEOUT=2000;
@@ -40,7 +41,7 @@ export class CommunicationManager{
 		this.onOfflineCallback=cb;
 	}
 
-	setInputJoystick(left,right){
+	setInputJoysticks(left,right){
 		this.leftJoystick = left;
 		this.rightJoystick = right;
 	}
@@ -54,9 +55,10 @@ export class CommunicationManager{
 
 	updateControls(){
 		if( (this.leftJoystick!= null) && (this.rightJoystick!= null) ){
-			var command = generateCommand();
+			var command = this.parser.generateEmptyCommand();
 			//console.log(command);
 	
+			var mode = globalContext.mode;
 			if(mode == 1 || mode == 2){	
 				command.id = Communication_Commands.ControlSD;
 			}
@@ -67,7 +69,7 @@ export class CommunicationManager{
 			command.parameterCount = 2;
 			command.parameters.push(this.leftJoystick.getPercentage()); //steering
 			command.parameters.push(this.rightJoystick.getPercentage());
-			sendCommand(command);	
+			this.sendCommand(command);	
 		}
 
 	}
@@ -97,6 +99,7 @@ export class CommunicationManager{
 	// Socket Stuff
 	openSocket(){
 		try{
+			//this.socket = new WebSocket('ws://' + "1.2.3.4" + ':81/');
 			this.socket = new WebSocket('ws://' + location.hostname + ':81/');
 			this.socket.onopen = function () {
 			  console.log("Opened socket");
@@ -106,8 +109,9 @@ export class CommunicationManager{
 			};
 			this.socket.onmessage = function (e) {
 			  console.log('Server: ', e.data);
-			  checkResponse(e.data);
-			};
+			  this.checkResponse(e.data);
+			  this.processMessage(e.data);
+			}.bind(this);
 			this.socket.onclose = function () {
 			  console.log('WebSocket connection closed');
 			};
@@ -134,7 +138,7 @@ export class CommunicationManager{
 			this.socket.close();
 		} 
 		if(this.heartbeatTimer != -1){
-			this.clearInterval(this.heartbeatTimer);
+			clearInterval(this.heartbeatTimer);
 			this.heartbeatTimer = -1;
 		}
 		
@@ -157,7 +161,6 @@ export class CommunicationManager{
 	}
 
 	checkResponse(response){
-		console.log(response);
 		if( response.includes("V") ){
 			var value = response.substring(2);
 			//document.getElementById("BatteryVoltage").value = value + " V";
@@ -165,8 +168,18 @@ export class CommunicationManager{
 		}
 	}
 
+/* ToDo: Fix this
+	Uncaught TypeError: this is undefined
+    processMessage backendCommunication.js:176
+    onmessage backendCommunication.js:115
+    openSocket backendCommunication.js:112
+    connect backendCommunication.js:125
+    init main.js:31
+    setTimeout handler*init main.js:29
+    <anonymous> main.js:39
+*/
 	processMessage(input){
-		//console.log(input+" <-Server ");
+		console.log(input+" <-Server ");
 		var command = this.parser.decodeCommand(input);
 		
 		switch( command.id ){

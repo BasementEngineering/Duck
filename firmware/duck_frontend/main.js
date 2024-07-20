@@ -1,26 +1,37 @@
-import { initUi,showErrorMessage,hideErrorMessage, showPopupMenu,highlightModeButton } from "./my_modules/ui";
+import { initUi,showErrorMessage,hideErrorMessage, showPopupMenu,highlightModeButton,percentageToIcon,resetControls } from "./my_modules/ui";
 import { CommunicationManager } from "./my_modules/backendCommunication";
 import { Communication_Commands } from "./my_modules/parser";
+import "./my_modules/dataBuffer";
 
-import "bootstrap-icons/font/bootstrap-icons.css";
+import '@purge-icons/generated'
+import globalContext from "./my_modules/dataBuffer";
 
 const myCommunicationManager = new CommunicationManager;
+
+function onTick(){
+    myCommunicationManager.updateControls();
+    myCommunicationManager.sendHeartbeat();
+}
 
 function init(){
     initUi();
     document.getElementById("LedSendButton").onclick = sendLedData;
+
+    myCommunicationManager.setInputJoysticks(globalContext.leftJoystick,globalContext.rightJoystick);
     myCommunicationManager.setStatusCallback(onStatusUpdate);
     myCommunicationManager.setOnlineCallback(onOnline);
     myCommunicationManager.setOfflineCallback(onOffline);
+    myCommunicationManager.startHeartbeatCheck();
+
+    globalContext.batteryPercentage = 0;
+    percentageToIcon(globalContext.batteryPercentage,"Battery");
 
     setTimeout(function(){
         console.log("Attempting to connect");
         myCommunicationManager.connect();
         startReconnection();
-        setInterval(function(){
-            myCommunicationManager.updateControls();
-            myCommunicationManager.sendHeartbeat();
-          }, 100);
+
+        setInterval(onTick, 100);
 
     },2000);
 }
@@ -34,8 +45,7 @@ function onOffline(){
     console.log("Went offline");
     startReconnection();
     showErrorMessage();
-    leftJoystick.reset();
-    rightJoystick.reset();
+    resetControls();
 }
 
 function onOnline(){
@@ -63,7 +73,7 @@ function onStatusUpdate(command){
 }
 
 function updateControls(){
-	if( (leftJoystick!= null) && (rightJoystick!= null) ){
+	if( (globalContext.leftJoystick!= null) && (globalContext.rightJoystick!= null) ){
 		var command = myCommunicationManagergenerateEmptyCommand();
 
 		if(mode == 1 || mode == 2){	
@@ -74,8 +84,8 @@ function updateControls(){
 			command.id = Communication_Commands.ControlLR;
 		}
 		command.parameterCount = 2;
-		command.parameters.push(leftJoystick.getPercentage()); //steering
-		command.parameters.push(rightJoystick.getPercentage());
+		command.parameters.push(globalContext.leftJoystick.getPercentage()); //steering
+		command.parameters.push(globalContext.rightJoystick.getPercentage());
 		myCommunicationManagersendCommand(command);	
 	}
 }

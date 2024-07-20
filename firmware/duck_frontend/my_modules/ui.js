@@ -1,4 +1,5 @@
 import { Joystick } from "./joystick";
+import globalContext from "./dataBuffer";
 
 var show_errors = false;
 
@@ -7,8 +8,12 @@ export function initUi(){
   setupJoysticks();
   document.getElementById("SettingsButton").onclick = showPopupMenu
   document.getElementById("SettingsBackButton").onclick = showPopupMenu
- // drawBatteryIcon();
   setMode(1);
+}
+
+export function resetControls(){
+  globalContext.leftJoystick.reset();
+  globalContext.rightJoystick.reset();
 }
 
 function scaleItems(){
@@ -29,8 +34,8 @@ function setJoystickSize(name,size){
 }
 
 function setupJoysticks(){
-  leftJoystick = new Joystick("LeftJoystick",false);
-  rightJoystick = new Joystick("RightJoystick",false);
+  globalContext.leftJoystick = new Joystick("LeftJoystick",false);
+  globalContext.rightJoystick = new Joystick("RightJoystick",false);
 
   document.getElementById("Mode1Button").addEventListener("click", e => setMode(1) );
   document.getElementById("Mode2Button").addEventListener("click", e => setMode(2) );
@@ -54,20 +59,20 @@ var statusData =[
   {
     name:"Battery",
     indexId: "BatterySymbol",
-    icons:["bi bi-battery","bi bi-battery-half","bi bi-battery-full"],
+    icons:["bi:battery","bi:battery-half","bi:battery-full"],
     critical:false
   },
   {
     name:"Network",
     indexId: "NetworkSymbol",
-    icons:["bi bi-wifi-1","bi bi-wifi-2","bi bi-wifi"],
+    icons:["bi:wifi-1","bi:wifi-2","bi:wifi"],
     critical:false
   }
 ];
 
 var statusColors = ["rgb(255, 0, 0)","rgb(255, 153, 51)","rgb(0, 204, 0)"];
 
-function percentageToIcon(percentage,parameterName){
+export function percentageToIcon(percentage,parameterName){
   var newIconName = "";
   var newColor = "";
   var visibility = "";
@@ -93,7 +98,7 @@ function percentageToIcon(percentage,parameterName){
     newColor = statusColors[0];
   }
   
-  document.getElementById(elementId).className = newIconName;
+  document.getElementById(elementId).setAttribute('data-icon', newIconName);
   document.getElementById(elementId).style.visibility = visibility;
   document.getElementById(elementId).style.color = newColor;
 }
@@ -128,31 +133,31 @@ export function highlightModeButton(newMode){
 }
 
 function setMode(newMode){
-  mode = newMode;
+  globalContext.mode = newMode;
   highlightModeButton(newMode);
 
   if(newMode == 1 || newMode == 2){
-    leftJoystick.setDeadband(25);
-    rightJoystick.setDeadband(0);
-    rightJoystick.setRotation(true); //left right steering  
+    globalContext.leftJoystick.setDeadband(25);
+    globalContext.rightJoystick.setDeadband(0);
+    globalContext.rightJoystick.setRotation(true); //left right steering  
     if(newMode == 1){
-      leftJoystick.setStickyness(false);
+      globalContext.leftJoystick.setStickyness(false);
     }
     else{
-      leftJoystick.setStickyness(true);
+      globalContext.leftJoystick.setStickyness(true);
     }
   }
   else if(newMode == 3 || newMode == 4){
-    leftJoystick.setDeadband(25);
-    rightJoystick.setDeadband(25);
-    rightJoystick.setRotation(false);
+    globalContext.leftJoystick.setDeadband(25);
+    globalContext.rightJoystick.setDeadband(25);
+    globalContext.rightJoystick.setRotation(false);
     if(newMode == 3){
-      leftJoystick.setStickyness(false);
-      rightJoystick.setStickyness(false);
+      globalContext.leftJoystick.setStickyness(false);
+      globalContext.rightJoystick.setStickyness(false);
     }
     else{
-      leftJoystick.setStickyness(true);
-      rightJoystick.setStickyness(true);
+      globalContext.leftJoystick.setStickyness(true);
+      globalContext.rightJoystick.setStickyness(true);
     }
   }
   

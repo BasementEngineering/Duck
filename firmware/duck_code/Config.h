@@ -11,8 +11,8 @@
 #define MAX_WIFI_CONNECTIONS 2
 
 //Station Settings
-#define NETWORK_SSID "*****"
-#define NETWORK_PSK  "*****"
+#define NETWORK_SSID "**********"
+#define NETWORK_PSK  "**********"
 
 
 //Motor Settings

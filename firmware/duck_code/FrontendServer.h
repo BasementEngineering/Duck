@@ -10,7 +10,7 @@ bool serverOnline = false;
 
 ESP8266WebServer server(80);
 
-#include "website_content.h"
+#include "website_functions.h"
 
 //Function Prototypes
 void FrontendServer_init();
@@ -20,22 +20,8 @@ void FrontendServer_update();
 void FrontendServer_start();
 void FrontendServer_stop();
 
-void handle_index_html() { server.send_P(200, "text/html", index_html,index_html_length);}
-void handle_dataBuffer_js() { server.send_P(200, "application/javascript", dataBuffer_js,dataBuffer_js_length);}
-void handle_bootstrap_icons_css() { server.send_P(200, "text/plain", bootstrap_icons_css,bootstrap_icons_css_length);}
-void handle_bootstrap_icons_json() { server.send_P(200, "text/plain", bootstrap_icons_json,bootstrap_icons_json_length);}
-void handle_bootstrap_icons_scss() { server.send_P(200, "text/plain", bootstrap_icons_scss,bootstrap_icons_scss_length);}
-void handle_icons_woff2() { server.send_P(200, "text/plain", icons_woff2,icons_woff2_length);}
-
 void FrontendServer_init(){
-  server.on("/", handle_index_html);
-server.on("/scripts/dataBuffer.js", handle_dataBuffer_js);
-server.on("/icons/bootstrap-icons.css", handle_bootstrap_icons_css);
-server.on("/icons/bootstrap-icons.json", handle_bootstrap_icons_json);
-server.on("/icons/bootstrap-icons.scss", handle_bootstrap_icons_scss);
-server.on("/icons/icons.woff2", handle_icons_woff2);
-
-  //ToDo
+  setupServerFunctions();
 
   FrontendServer_start();
 }

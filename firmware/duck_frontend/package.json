@@ -9,14 +9,15 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@iconify-json/bi": "^1.1.23",
+    "@iconify/json": "^2.2.229",
     "vite": "^5.3.3",
     "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-purge-icons": "^0.10.0",
     "vite-plugin-singlefile": "^2.0.2"
   },
   "dependencies": {
-    "@popperjs/core": "^2.11.8",
-    "bootstrap": "^5.3.3",
-    "bootstrap-icons": "^1.11.3",
-    "three": "^0.166.1"
+    "@iconify/iconify": "^3.1.1",
+    "@popperjs/core": "^2.11.8"
   }
 }
