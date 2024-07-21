@@ -1,13 +1,15 @@
 import { Joystick } from "./joystick";
 import globalContext from "./dataBuffer";
+import { Menu } from "./menu";
 
 var show_errors = false;
+var my_menu = new Menu();
 
 export function initUi(){
   scaleItems();
+  my_menu.init();
   setupJoysticks();
-  document.getElementById("SettingsButton").onclick = showPopupMenu
-  document.getElementById("SettingsBackButton").onclick = showPopupMenu
+
   setMode(1);
 }
 
@@ -37,10 +39,10 @@ function setupJoysticks(){
   globalContext.leftJoystick = new Joystick("LeftJoystick",false);
   globalContext.rightJoystick = new Joystick("RightJoystick",false);
 
-  document.getElementById("Mode1Button").addEventListener("click", e => setMode(1) );
+  /*document.getElementById("Mode1Button").addEventListener("click", e => setMode(1) );
   document.getElementById("Mode2Button").addEventListener("click", e => setMode(2) );
   document.getElementById("Mode3Button").addEventListener("click", e => setMode(3) );
-  document.getElementById("Mode4Button").addEventListener("click", e => setMode(4) );
+  document.getElementById("Mode4Button").addEventListener("click", e => setMode(4) );*/
 }
 
   function toggleVisibility(elementId){
@@ -123,18 +125,13 @@ export function hideErrorMessage(){
 
 //Settings functions
 export function showPopupMenu() {
-  toggleVisibility("popupMenu")
+  toggleVisibility("popupMenu");
+  renderMenu();
   }
-
-export function highlightModeButton(newMode){
-  for(var i = 1; i <= 4; i++){
-    document.getElementById("Mode"+i+"Button").style.borderColor = (i==newMode) ? "rgb(255, 204, 0)" : "rgb(179, 178, 175)";
-  }
-}
 
 function setMode(newMode){
   globalContext.mode = newMode;
-  highlightModeButton(newMode);
+  //highlightModeButton(newMode);
 
   if(newMode == 1 || newMode == 2){
     globalContext.leftJoystick.setDeadband(25);

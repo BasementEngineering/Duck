@@ -1,4 +1,4 @@
-import { initUi,showErrorMessage,hideErrorMessage, showPopupMenu,highlightModeButton,percentageToIcon,resetControls } from "./my_modules/ui";
+import { initUi,showErrorMessage,hideErrorMessage, showPopupMenu, percentageToIcon,resetControls } from "./my_modules/ui";
 import { CommunicationManager } from "./my_modules/backendCommunication";
 import { Communication_Commands } from "./my_modules/parser";
 import "./my_modules/dataBuffer";
@@ -15,7 +15,7 @@ function onTick(){
 
 function init(){
     initUi();
-    document.getElementById("LedSendButton").onclick = sendLedData;
+    //document.getElementById("LedSendButton").onclick = sendLedData;
 
     myCommunicationManager.setInputJoysticks(globalContext.leftJoystick,globalContext.rightJoystick);
     myCommunicationManager.setStatusCallback(onStatusUpdate);
