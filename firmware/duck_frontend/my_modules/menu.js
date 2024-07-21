@@ -69,17 +69,29 @@ export class Menu {
         return [motorPin1,motorPin2];
     }*/
 
-    appendPinSetting(form, pinName, parameterPrefix){
+    appendPinSetting(pinsDiv, pinName, parameterPrefix){
         let inputDiv1 = document.createElement("div");
         let inputLabel1 = document.createElement("label");
         inputLabel1.innerHTML = pinName;
         let motorPin1 = document.createElement("input");
         motorPin1.type = "number";
         motorPin1.id = parameterPrefix;
+        motorPin1.name = parameterPrefix;
         motorPin1.value = "0";
         inputDiv1.appendChild(inputLabel1);
         inputDiv1.appendChild(motorPin1);
-        form.appendChild(inputDiv1);
+        pinsDiv.appendChild(inputDiv1);
+    }
+
+    appendPins(pinsDiv, motorDriverType, parameterPrefix){
+        if(motorDriverType == "0"){
+            this.appendPinSetting(pinsDiv, "Pin 1", parameterPrefix+"pin1");
+            this.appendPinSetting(pinsDiv, "Pin 2", parameterPrefix+"pin2");
+            this.appendPinSetting(pinsDiv, "Enable Pin", parameterPrefix+"en");
+        }
+        else if(motorDriverType == "1"){
+            this.appendPinSetting(pinsDiv, "Pin", parameterPrefix+"pin1");
+        }
     }
 
     appendMotorSettings(form, motorName,parameterPrefix){
@@ -94,19 +106,20 @@ export class Menu {
         motorDriverTypeLabel.innerHTML = "Motor Driver Type";
         let motorDriverType = document.createElement("select");
         motorDriverType.id = "MotorDriverType";
+        motorDriverType.name = parameterPrefix+"driverType";
         motorDriverType.innerHTML = '<option value="0">H-Bridge</option><option value="1">ESC</option>';
         motorDriverTypeDiv.appendChild(motorDriverTypeLabel);
         motorDriverTypeDiv.appendChild(motorDriverType);
         form.appendChild(motorDriverTypeDiv);
 
-        if(motorDriverType.value == "0"){
-            this.appendPinSetting(form, "Pin 1", parameterPrefix+"pin1");
-            this.appendPinSetting(form, "Pin 2", parameterPrefix+"pin2");
-            this.appendPinSetting(form, "Enable Pin", parameterPrefix+"en");
+        let pinsDiv = document.createElement("div");
+        pinsDiv.id = "pinsDiv";
+        form.appendChild(pinsDiv);
+        motorDriverType.onchange = () => {
+            pinsDiv.innerHTML = "";
+            this.appendPins(pinsDiv, motorDriverType.value, parameterPrefix);
         }
-        else if(motorDriverType.value == "1"){
-            this.appendPinSetting(form, "Pin", parameterPrefix+"pin1");
-        }
+        this.appendPins(pinsDiv, motorDriverType.value, parameterPrefix);
     }
         
 
@@ -118,8 +131,6 @@ export class Menu {
 
         let form = document.createElement("form");
         form.id = "Drive System Settings";
-        form.action = "/settings/drive_system";
-        form.method = "post";
 
         // Drive System Type Select
         let driveSystemTypeDiv = document.createElement("div");
@@ -129,7 +140,7 @@ export class Menu {
         let driveSystemType = document.createElement("select");
         driveSystemType.id = "driveSystemType";
         driveSystemType.name = parameterPrefix+"type";
-        driveSystemType.innerHTML = '<option value="0">H-Bridge</option><option value="1">ESC</option>';
+        driveSystemType.innerHTML = '<option value="0">diferential Thrust</option><option value="1">motor & rudder</option>';
         driveSystemTypeDiv.appendChild(driveSystemTypeLabel);
         driveSystemTypeDiv.appendChild(driveSystemType);
         form.appendChild(driveSystemTypeDiv);
@@ -143,6 +154,24 @@ export class Menu {
         submitButton.innerHTML = "Save";
         form.appendChild(submitButton);
 
+        console.log(new FormData(form));
+
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            let formData = new FormData(form);
+            let data = {};
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            console.log(data);
+            fetch("/settings/motor", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+        });
         screenArea.appendChild(form);
     }
 
