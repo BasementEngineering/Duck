@@ -86,4 +86,126 @@
  * USB Port = Bottom
  */
 
- #endif
+/*** New Settings ***/
+// This new class is supposed to make the static config dynamic
+#include <Preferences.h>
+#include <ArduinoJson.h>
+
+class Settings {
+private:
+
+public:
+    uint8_t motor1_pinA;
+    uint8_t motor1_pinB;
+    uint8_t motor1_pinE;
+    uint8_t motor2_pinA;
+    uint8_t motor2_pinB;
+    uint8_t motor2_pinE;
+    String ap_ssid;
+    String ap_password;
+    String sta_ssid;
+    String sta_password;
+
+    Preferences preferences;
+
+    Settings(): preferences(){
+    }
+
+    void begin() {
+        preferences.begin("settings", false);
+        getSettings();
+        preferences.end();
+    }
+
+    void getSettings() {
+        preferences.begin("settings", false);
+        motor1_pinA = preferences.getUInt("motor1_pinA", 13);
+        motor1_pinB = preferences.getUInt("motor1_pinB", 12);
+        motor1_pinE = preferences.getUInt("motor1_pinE", 15);
+        motor2_pinA = preferences.getUInt("motor2_pinA", 14);
+        motor2_pinB = preferences.getUInt("motor2_pinB", 0);
+        motor2_pinE = preferences.getUInt("motor2_pinE", 15);
+        ap_ssid = preferences.getString("ap_ssid");
+        ap_password = preferences.getString("ap_password");
+        sta_ssid = preferences.getString("sta_ssid");
+        sta_password = preferences.getString("sta_password");
+        preferences.end();
+    }
+
+    void saveSettings(){
+      Serial.println("Saving Settings");
+        preferences.begin("settings", false);
+        preferences.putString("ap_ssid",ap_ssid);
+        preferences.putString("ap_password",ap_password);
+        preferences.putString("sta_ssid",sta_ssid);
+        preferences.putString("sta_password",sta_password);
+        preferences.putUInt("motor1_pinA", motor1_pinA);
+        preferences.putUInt("motor1_pinB", motor1_pinB);
+        preferences.putUInt("motor1_pinE", motor1_pinE);
+        preferences.putUInt("motor2_pinA", motor2_pinA);
+        preferences.putUInt("motor2_pinB", motor2_pinB); 
+        preferences.putUInt("motor2_pinE", motor2_pinE);
+        preferences.end();
+    }
+
+    String getDrivingSystemSettings(){
+      String response = "{\"motor1\":{\"pinA\":" + String(motor1_pinA) + ",\"pinB\":" + String(motor1_pinB) + ",\"pinE\":" + String(motor1_pinE) + "}," 
+        + "\"motor1\":{\"pinA\":" + String(motor2_pinA) + ",\"pinB\":" + String(motor2_pinB) + ",\"pinE\":" + String(motor2_pinE) + "} }";
+
+      return response;
+    }
+
+    void parseDrivingSystemSettings(String jsonString){
+      Serial.println("Parsing driving system settings");
+        StaticJsonDocument<200> doc;
+        
+      // Deserialize the JSON document
+        DeserializationError error = deserializeJson(doc, jsonString);
+
+    // Test if parsing succeeds.
+    if (error) {
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return;
+    }
+    motor1_pinA = doc["motor1_pinA"].as<uint8_t>();
+    motor1_pinB = doc["motor1_pinB"].as<uint8_t>();
+    motor1_pinE = doc["motor1_pinE"].as<uint8_t>();
+    motor2_pinA = doc["motor2_pinA"].as<uint8_t>();
+    motor2_pinB = doc["motor2_pinB"].as<uint8_t>();
+    motor2_pinE = doc["motor2_pinE"].as<uint8_t>();
+
+    Serial.println("Motor 1 Pin A: " + motor1_pinA);
+    Serial.println("Motor 1 Pin B: " + motor1_pinB);
+    }
+
+    String getWifiSettings(){
+      String response = "{\"ap\":{\"ssid\":\"" + ap_ssid + "\",\"password\":\"" + "********" + "\"}," +
+      "\"sta\":{\"ssid\":\"" + sta_ssid + "\",\"password\":\"" + "********" + "\"}}";
+        return response;
+    }
+
+    void parseWifiSettings(String jsonString){
+      Serial.println("Parsing wifi settings");
+        StaticJsonDocument<200> doc;
+        
+      // Deserialize the JSON document
+        DeserializationError error = deserializeJson(doc, jsonString);
+
+  // Test if parsing succeeds.
+  if (error) {
+    Serial.print(F("deserializeJson() failed: "));
+    Serial.println(error.f_str());
+    return;
+  }
+    ap_ssid = doc["ap"]["ssid"].as<String>();
+    ap_password = doc["ap"]["password"].as<String>();
+    sta_ssid = doc["ap"]["ssid"].as<String>();
+    sta_password = doc["ap"]["password"].as<String>();
+
+    Serial.println("AP SSID: " + ap_ssid);
+    Serial.println("AP Password: " + ap_password);
+    }
+};
+
+#endif

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Settings</title>
+
+</head>
+
+<body>
+    <div id="form-container"></div>
+    <h1>Settings</h1>
+
+    <h2>WiFi</h2>
+    <form id="wifi-form">
+        <h3>Access Point Mode</h3>
+        <p>Wifi settings for when the boat is the access point.</p>
+        <br>
+            <label for="ap_ssid">Network Name</label>
+            <input name="ap_ssid" id="ap_ssid" placeholder="ssid"></input>
+        <br>
+            <label for="ap_password">Password</label>
+            <input name="ap_password" id="ap_password" placeholder="password"></input>
+        <br>
+        <h3>Station Mode</h3>
+        <p>Wifi settings for when the boat is connected to a network.</p>
+        <br>
+            <label for="sta_ssid">Network Name</label>
+            <input name="sta_ssid" id="sta_ssid" placeholder="ssid"></input>
+        <br>
+            <label for="sta_password">Password</label>
+            <input name="sta_password" id="sta_password" placeholder="password"></input>
+        <br>
+        <button type="submit" id="send-wifi-settings">Save</button>
+    </form>
+
+    <h2>Driving System</h2>
+        <form id="driving-system-form"></form>
+
+    <h2>LEDs</h2>
+    <form method="get">
+        <input id="input" type="hidden" name="json">
+        <div id="led-editor"></div>
+        <button id="send-drive-system-settings">Save</button>
+    </form>
+
+
+    <script type="module" src="./settings.js"></script>
+
+</body>
+
+</html>

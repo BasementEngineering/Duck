@@ -5,8 +5,10 @@
 #define DEBUG_FRONTEND_SERVER
 
 #include "LittleFS.h"
+#include "Config.h"
 
 bool serverOnline = false;
+Settings* settingsObject = NULL;
 
 ESP8266WebServer server(80);
 
@@ -20,8 +22,34 @@ void FrontendServer_update();
 void FrontendServer_start();
 void FrontendServer_stop();
 
+void FrontendServer_setSettingsObject(Settings* _settingsObject){
+  settingsObject = _settingsObject;
+}
+
 void FrontendServer_init(){
   setupServerFunctions();
+
+  server.on("/settings/wifi", HTTP_POST, [](){
+    String jsonString = server.arg("plain");
+    settingsObject->parseWifiSettings(jsonString);
+    settingsObject->saveSettings();
+    server.send(200, "text/plain", "Settings updated");
+  });
+  server.on("/settings/wifi",HTTP_GET, [](){
+    String response = settingsObject->getWifiSettings();
+    server.send(200, "application/json", response);
+  });
+
+  server.on("/settings/drivingsystem", HTTP_POST, [](){
+    String jsonString = server.arg("plain");
+    settingsObject->parseDrivingSystemSettings(jsonString);
+    //settingsObject->saveSettings();
+    server.send(200, "text/plain", "Settings updated");
+  });
+  server.on("/settings/drivingsystem",HTTP_GET, [](){
+    String response = settingsObject->getDrivingSystemSettings();
+    server.send(200, "application/json", response);
+  });
 
   FrontendServer_start();
 }

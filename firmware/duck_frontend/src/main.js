@@ -1,7 +1,6 @@
 import { initUi,showErrorMessage,hideErrorMessage, showPopupMenu, percentageToIcon,resetControls } from "./my_modules/ui";
 import { CommunicationManager } from "./my_modules/backendCommunication";
 import { Communication_Commands } from "./my_modules/parser";
-import "./my_modules/dataBuffer";
 
 import '@purge-icons/generated'
 import globalContext from "./my_modules/dataBuffer";

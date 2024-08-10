@@ -1,13 +1,13 @@
 import { Joystick } from "./joystick";
 import globalContext from "./dataBuffer";
-import { Menu } from "./menu";
+//import { Menu } from "./menu";
 
 var show_errors = false;
-var my_menu = new Menu();
+//var my_menu = new Menu();
 
 export function initUi(){
   scaleItems();
-  my_menu.init();
+  //my_menu.init();
   setupJoysticks();
 
   setMode(1);

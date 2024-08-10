@@ -16,6 +16,7 @@ EscPropulsion propulsionSystem(MOTOR_IN1,MOTOR_IN2);
 PropulsionSystem propulsionSystem(MOTOR_EN,MOTOR_IN1,MOTOR_IN2,MOTOR_IN3,MOTOR_IN4);
 #endif
 LightBar lightBar(LED_COUNT, LED_PIN);
+Settings settings;
 
 enum State{
   STARTING_WIFI,
@@ -46,8 +47,13 @@ void setup(){
   lightBar.initLeds();
   lightBar.setMode(SOLID);
   lightBar.setMainColor(200,50,0);
+
+  settings.getSettings();
+  Wifi_setApCredentials(settings.ap_ssid,settings.ap_password);
   Wifi_setup();
   lightBar.setMode(BLINKING);
+
+  FrontendServer_setSettingsObject(&settings);
   FrontendServer_init();
   //lightBar.update()
 

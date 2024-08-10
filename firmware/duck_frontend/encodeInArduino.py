@@ -26,18 +26,20 @@ def to_byte_array_string(content_string):
         progress = index / length * 100
         print(progress, end="\r")
         char_code = ord(char)
+        if char_code > 127:
+            print(f"Warning: character '{char}' with code {char_code} is not ASCII")
+            char_code = 0x00
+
         if index < length - 1:
             byte_string += f"{padded_hex(char_code,2)},"
         else:
             byte_string += f"{padded_hex(char_code,2)}"
 
-        if char_code > 127:
-            print(f"Warning: character '{char}' with code {char_code} is not ASCII")
         if index != 0 and (index+1) % bytes_per_line == 0:
             byte_string += "\n"
     return byte_string
 
-def file_to_progmem_array_string(file_path: str, filename: str):
+def file_to_progmem_array_string(file_path: str, filename: str,artifact_name: str = None):
     arduino_string = ""
     with open(file_path, 'r', encoding='utf-8',errors='replace') as file:
         content = file.read()
@@ -48,14 +50,18 @@ def file_to_progmem_array_string(file_path: str, filename: str):
         print(f"Encoding {filename} with {array_length} characters")
         arduino_string += f"//File: {filename}\n"
         #"R\"=====(\"{encoded_content})=====\";\n"
-        arduino_string += f"const uint16_t {get_artifact_name(filename)}_length = {array_length};\n"
-        arduino_string += f"const char {get_artifact_name(filename)}[] PROGMEM = {{ \n{encoded_content} }};\n"
+        if artifact_name == None:
+            artifact_name = get_artifact_name(filename)
+
+        arduino_string += f"const uint16_t {artifact_name}_length = {array_length};\n"
+        arduino_string += f"const char {artifact_name}[] PROGMEM = {{ \n{encoded_content} }};\n"
     
     return arduino_string
 
 ### Functional Encoding ###
-def get_arduino_server_function(foldername: str,filename: str,index: bool = False):
-    artifact_name = get_artifact_name(filename)
+def get_arduino_server_function(foldername: str,filename: str,index: bool = False,artifact_name: str = None):
+    if artifact_name == None:
+        artifact_name = get_artifact_name(filename)
 
     path = filename
     if foldername != None:
@@ -67,9 +73,10 @@ def get_arduino_server_function(foldername: str,filename: str,index: bool = Fals
     server_function= f"server.on(\"{path}\", handle_{artifact_name});\n"
     return server_function
 
-def get_arduino_content_callback(filename: str):
+def get_arduino_content_callback(filename: str, artifact_name: str = None):
     mime_type = get_mime_string(filename)
-    artifact_name = get_artifact_name(filename)
+    if artifact_name == None:
+        artifact_name = get_artifact_name(filename)
 
     content_callback = f"void handle_{artifact_name}() {{ server.send_P(200, \"{mime_type}\", {artifact_name},{artifact_name}_length);}}\n"
     return content_callback
@@ -91,6 +98,12 @@ def create_functions_file(dist_folder_path):
 
     index_content_callback = get_arduino_content_callback('index.html')
     content_callbacks+=index_content_callback
+
+    # Settings
+    folder_name = 'settings'
+    filename = 'index.html'
+    server_functions += get_arduino_server_function(folder_name,filename,False,'settings_index')
+    content_callbacks += get_arduino_content_callback(filename,'settings_index')
 
     # Assets
     folder_name = 'assets'
@@ -133,6 +146,13 @@ def create_content_file(dist_folder_path):
     filename = 'index.html'
     file_path = os.path.join(dist_folder_path, filename)
     content+= file_to_progmem_array_string(file_path, filename)
+
+    ## Settings
+    folder_name = 'settings'
+    filename = 'index.html'
+
+    file_path = os.path.join(dist_folder_path, folder_name, filename)
+    content+= file_to_progmem_array_string(file_path, filename, 'settings_index')
 
     ## Assets
     folder_name = 'assets'

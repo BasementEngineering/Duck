@@ -1,3 +1,5 @@
+import {JSONEditor} from '@json-editor/json-editor';
+
 export class Menu {
     constructor() {
         this.menuItems = [
@@ -69,6 +71,41 @@ export class Menu {
         return [motorPin1,motorPin2];
     }*/
 
+    motorJsonFormSettings(){
+        let screenArea = document.getElementById("settingsPage");
+        screenArea.innerHTML = "";
+
+        var editor = new JSONEditor(document.getElementById('settingsPage'),{
+            schema: {
+              type: "object",
+              title: "Drive System",
+              properties: {
+                make: {
+                  type: "string",
+                  enum: [
+                    "Rudder & Motor",
+                    "Differential Thrust"
+                  ]
+                },
+                model: {
+                  type: "string"
+                }
+              }
+            }
+          });
+
+        let submitButton = document.createElement("button");
+          submitButton.type = "submit";
+          submitButton.innerHTML = "Save";
+          submitButton.id = "submit";
+          screenArea.appendChild(submitButton);
+        // Hook up the submit button to log to the console
+        document.getElementById('submit').addEventListener('click',function() {
+            // Get the value from the editor
+            console.log(editor.getValue());
+          });
+    }
+
     appendPinSetting(pinsDiv, pinName, parameterPrefix){
         let inputDiv1 = document.createElement("div");
         let inputLabel1 = document.createElement("label");
@@ -121,6 +158,79 @@ export class Menu {
         }
         this.appendPins(pinsDiv, motorDriverType.value, parameterPrefix);
     }
+
+    renderInputScreen(){
+        let screenArea = document.getElementById("settingsPage");
+        screenArea.innerHTML = "";
+
+        var editor = new JSONEditor(document.getElementById('settingsPage'),{
+            schema: {
+              type: "object",
+              title: "Car",
+              properties: {
+                make: {
+                  type: "string",
+                  enum: [
+                    "Toyota",
+                    "BMW",
+                    "Honda",
+                    "Ford",
+                    "Chevy",
+                    "VW"
+                  ]
+                },
+                model: {
+                  type: "string"
+                },
+                year: {
+                  type: "integer",
+                  enum: [
+                    1995,1996,1997,1998,1999,
+                    2000,2001,2002,2003,2004,
+                    2005,2006,2007,2008,2009,
+                    2010,2011,2012,2013,2014
+                  ],
+                  default: 2008
+                },
+                safety: {
+                  type: "integer",
+                  format: "rating",
+                  maximum: "5",
+                  exclusiveMaximum: false,
+                  readonly: false
+                }
+              }
+            }
+          });
+
+        let submitButton = document.createElement("button");
+          submitButton.type = "submit";
+          submitButton.innerHTML = "Save";
+          submitButton.id = "submit";
+          screenArea.appendChild(submitButton);
+        // Hook up the submit button to log to the console
+        document.getElementById('submit').addEventListener('click',function() {
+            // Get the value from the editor
+            console.log(editor.getValue());
+          });
+    }
+    /*renderInputScreen() {
+        let screenArea = document.getElementById("settingsPage");
+        screenArea.innerHTML = "";
+
+        let modePanel = document.createElement("div");
+        modePanel.id = "ModePanel";
+        for(let i = 1; i <= 4; i++){
+            let modeButton = document.createElement("button");
+            modeButton.id = "Mode"+i+"Button";
+            modeButton.innerHTML = "Mode "+i;
+            modeButton.onclick = () => {
+                this.highlightButton("Mode",i,4);
+            };
+            modePanel.appendChild(modeButton);
+        }
+        screenArea.appendChild(modePanel);
+    }*/
         
 
     renderMotorsScreen(){

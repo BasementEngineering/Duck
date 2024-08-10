@@ -8,8 +8,8 @@
 
 #define DEBUG
 
-const char *ssid = APSSID;
-const char *password = APPSK;
+String ssid = "Duck2";
+String password = APPSK;
 
 const char *networkSsid = NETWORK_SSID;
 const char *networkPassword = NETWORK_PSK;
@@ -34,6 +34,10 @@ bool Wifi_online();
 bool Wifi_connected();
 int Wifi_getQualityPercentage();
 
+// Improv functions for initially setting up the wifi
+//TODO: Implement Improiv functions
+
+
 //To find a good Wifi Channel
 #define CHANNEL_CNT 14
 uint8_t ap_count[CHANNEL_CNT] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -48,6 +52,9 @@ void printScanData();
 int findEmptyChannel();
 int findLowestRssiChannel();
 int getBestChannel();
+
+void setApCredentials(String _ssid, String _password);
+
 void startStation();
 void startAp();
 
@@ -94,15 +101,23 @@ void startStation(){
    }
 }
 
+void Wifi_setApCredentials(String _ssid, String _password){
+  ssid = _ssid;
+  password = _password;
+}
+
 void startAp(){
+
+    const char *c_ssid = ssid.c_str();
+    const char *c_password = password.c_str();
     WiFi.disconnect();
     WiFi.mode(WIFI_AP);
     Serial.print("Setting soft-AP configuration ... ");
     Serial.println(WiFi.softAPConfig(local_IP, gateway, subnet) ? "Ready" : "Failed!");
-    WiFi.softAP(ssid, password,myChannel,false,MAX_WIFI_CONNECTIONS);
+    WiFi.softAP(c_ssid, c_password,myChannel,false,MAX_WIFI_CONNECTIONS);
     #ifdef DEBUG
       Serial.print("Access Point \"");
-      Serial.print(ssid);
+      Serial.print(c_ssid);
       Serial.println("\" started");
       Serial.print("IP address:\t");
       Serial.println(WiFi.softAPIP());
