@@ -1,18 +1,17 @@
-import {JSONEditor} from '@json-editor/json-editor';
-
 export class Menu {
     constructor() {
         this.menuItems = [
             {id: 0, name: "Lights", screen: "Lights"},
-            {id: 1, name: "Motors", screen: "Motors"},
-            {id: 2, name: "WiFi", screen: "WiFi"},
-            {id: 3, name: "Input", screen: "Input"}
+            {id: 1, name: "Input", screen: "Input"}
         ];
         this.currentMenu = this.menuItems[0];
         this.active = false;
     }
 
-    init() {
+    init(ledCallback,modeCallback,globalContext) {
+        this.ledCallback = ledCallback;
+        this.globalContext = globalContext;
+        this.modeCallback = modeCallback;
         document.getElementById("SettingsButton").onclick = this.showPopupMenu;
         document.getElementById("SettingsBackButton").onclick = this.hidePopupMenu;
 
@@ -37,277 +36,47 @@ export class Menu {
         this.renderScreen();
     }
 
-    /*renderMotorPinInputs(){
-        let screenArea = document.getElementById("settingsPage");
-        var motorDriverChoice = document.getElementById("MotorDriverType").value;
-
-        let header1 = document.createElement("h3");	
-        header1.innerHTML = "Motor 1";
-        
-        motorPin1.type = "number";
-        motorPin1.id = "MotorPin1";
-        motorPin1.value = "0";
-        document.getElementById("settingsPage").appendChild(header1);
-        document.getElementById("settingsPage").appendChild(motorPin1);
-
-        if(motorDriverChoice == "H-Bridge"){
-                let motorPin2 = document.createElement("input");
-                motorPin2.type = "number";
-                motorPin2.id = "MotorPin2";
-                motorPin2.value = "0";
-                let header2 = document.createElement("h3");
-        }
-
-        let motorPin1 = document.createElement("input");
-        motorPin1.type = "number";
-        motorPin1.id = "MotorPin1";
-        motorPin1.value = "0";
-
-        let motorPin2 = document.createElement("input");
-        motorPin2.type = "number";
-        motorPin2.id = "MotorPin2";
-        motorPin2.value = "0";
-
-        return [motorPin1,motorPin2];
-    }*/
-
-    motorJsonFormSettings(){
-        let screenArea = document.getElementById("settingsPage");
-        screenArea.innerHTML = "";
-
-        var editor = new JSONEditor(document.getElementById('settingsPage'),{
-            schema: {
-              type: "object",
-              title: "Drive System",
-              properties: {
-                make: {
-                  type: "string",
-                  enum: [
-                    "Rudder & Motor",
-                    "Differential Thrust"
-                  ]
-                },
-                model: {
-                  type: "string"
-                }
-              }
-            }
-          });
-
-        let submitButton = document.createElement("button");
-          submitButton.type = "submit";
-          submitButton.innerHTML = "Save";
-          submitButton.id = "submit";
-          screenArea.appendChild(submitButton);
-        // Hook up the submit button to log to the console
-        document.getElementById('submit').addEventListener('click',function() {
-            // Get the value from the editor
-            console.log(editor.getValue());
-          });
-    }
-
-    appendPinSetting(pinsDiv, pinName, parameterPrefix){
-        let inputDiv1 = document.createElement("div");
-        let inputLabel1 = document.createElement("label");
-        inputLabel1.innerHTML = pinName;
-        let motorPin1 = document.createElement("input");
-        motorPin1.type = "number";
-        motorPin1.id = parameterPrefix;
-        motorPin1.name = parameterPrefix;
-        motorPin1.value = "0";
-        inputDiv1.appendChild(inputLabel1);
-        inputDiv1.appendChild(motorPin1);
-        pinsDiv.appendChild(inputDiv1);
-    }
-
-    appendPins(pinsDiv, motorDriverType, parameterPrefix){
-        if(motorDriverType == "0"){
-            this.appendPinSetting(pinsDiv, "Pin 1", parameterPrefix+"pin1");
-            this.appendPinSetting(pinsDiv, "Pin 2", parameterPrefix+"pin2");
-            this.appendPinSetting(pinsDiv, "Enable Pin", parameterPrefix+"en");
-        }
-        else if(motorDriverType == "1"){
-            this.appendPinSetting(pinsDiv, "Pin", parameterPrefix+"pin1");
-        }
-    }
-
-    appendMotorSettings(form, motorName,parameterPrefix){
-        let header = document.createElement("h3");
-        header.innerHTML = motorName;
-        form.appendChild(header);
-
-        // Motor Driver Type Select
-        let motorDriverTypeDiv = document.createElement("div");
-        let motorDriverTypeLabel = document.createElement("label");
-        motorDriverTypeLabel.for = "MotorDriverType";
-        motorDriverTypeLabel.innerHTML = "Motor Driver Type";
-        let motorDriverType = document.createElement("select");
-        motorDriverType.id = "MotorDriverType";
-        motorDriverType.name = parameterPrefix+"driverType";
-        motorDriverType.innerHTML = '<option value="0">H-Bridge</option><option value="1">ESC</option>';
-        motorDriverTypeDiv.appendChild(motorDriverTypeLabel);
-        motorDriverTypeDiv.appendChild(motorDriverType);
-        form.appendChild(motorDriverTypeDiv);
-
-        let pinsDiv = document.createElement("div");
-        pinsDiv.id = "pinsDiv";
-        form.appendChild(pinsDiv);
-        motorDriverType.onchange = () => {
-            pinsDiv.innerHTML = "";
-            this.appendPins(pinsDiv, motorDriverType.value, parameterPrefix);
-        }
-        this.appendPins(pinsDiv, motorDriverType.value, parameterPrefix);
-    }
-
-    renderInputScreen(){
-        let screenArea = document.getElementById("settingsPage");
-        screenArea.innerHTML = "";
-
-        var editor = new JSONEditor(document.getElementById('settingsPage'),{
-            schema: {
-              type: "object",
-              title: "Car",
-              properties: {
-                make: {
-                  type: "string",
-                  enum: [
-                    "Toyota",
-                    "BMW",
-                    "Honda",
-                    "Ford",
-                    "Chevy",
-                    "VW"
-                  ]
-                },
-                model: {
-                  type: "string"
-                },
-                year: {
-                  type: "integer",
-                  enum: [
-                    1995,1996,1997,1998,1999,
-                    2000,2001,2002,2003,2004,
-                    2005,2006,2007,2008,2009,
-                    2010,2011,2012,2013,2014
-                  ],
-                  default: 2008
-                },
-                safety: {
-                  type: "integer",
-                  format: "rating",
-                  maximum: "5",
-                  exclusiveMaximum: false,
-                  readonly: false
-                }
-              }
-            }
-          });
-
-        let submitButton = document.createElement("button");
-          submitButton.type = "submit";
-          submitButton.innerHTML = "Save";
-          submitButton.id = "submit";
-          screenArea.appendChild(submitButton);
-        // Hook up the submit button to log to the console
-        document.getElementById('submit').addEventListener('click',function() {
-            // Get the value from the editor
-            console.log(editor.getValue());
-          });
-    }
-    /*renderInputScreen() {
+    renderInputScreen() {
         let screenArea = document.getElementById("settingsPage");
         screenArea.innerHTML = "";
 
         let modePanel = document.createElement("div");
         modePanel.id = "ModePanel";
-        for(let i = 1; i <= 4; i++){
+        for(let i = 0; i < 4; i++){
             let modeButton = document.createElement("button");
             modeButton.id = "Mode"+i+"Button";
             modeButton.innerHTML = "Mode "+i;
             modeButton.onclick = () => {
                 this.highlightButton("Mode",i,4);
+                this.modeCallback(i+1);
             };
             modePanel.appendChild(modeButton);
         }
+
+        let trimSlider = document.createElement("input");
+        trimSlider.type = "range";
+        trimSlider.id = "TrimSlider";
+        trimSlider.min = "-100";
+        trimSlider.max = "100";
+        trimSlider.value = "0";
+        trimSlider.oninput = () => {
+          let trimValue = document.getElementById("TrimValue");
+          trimValue.innerHTML = trimSlider.value;
+          this.globalContext.trimValue = trimSlider.value;
+        };
+
+        let trimValue = document.createElement("span");
+        trimValue.id = "TrimValue";
+        trimValue.innerHTML = trimSlider.value;
+
+        let trimRow = document.createElement("div");
+        trimRow.appendChild(trimSlider);
+        trimRow.appendChild(trimValue);
+
+        screenArea.appendChild(trimRow);
         screenArea.appendChild(modePanel);
-    }*/
+    }
         
-
-    renderMotorsScreen(){
-        let parameterPrefix = "ds_";
-
-        let screenArea = document.getElementById("settingsPage");
-        screenArea.innerHTML = "";
-
-        let form = document.createElement("form");
-        form.id = "Drive System Settings";
-
-        // Drive System Type Select
-        let driveSystemTypeDiv = document.createElement("div");
-        let driveSystemTypeLabel = document.createElement("label");
-        driveSystemTypeLabel.for = "driveSystemType";
-        driveSystemTypeLabel.innerHTML = "Drive System Type";
-        let driveSystemType = document.createElement("select");
-        driveSystemType.id = "driveSystemType";
-        driveSystemType.name = parameterPrefix+"type";
-        driveSystemType.innerHTML = '<option value="0">diferential Thrust</option><option value="1">motor & rudder</option>';
-        driveSystemTypeDiv.appendChild(driveSystemTypeLabel);
-        driveSystemTypeDiv.appendChild(driveSystemType);
-        form.appendChild(driveSystemTypeDiv);
-
-        // Motor 1
-        this.appendMotorSettings(form, "Left Motor", parameterPrefix+"motor1_");
-
-        // Submit Button
-        let submitButton = document.createElement("button");
-        submitButton.type = "submit";
-        submitButton.innerHTML = "Save";
-        form.appendChild(submitButton);
-
-        console.log(new FormData(form));
-
-        form.addEventListener("submit", (event) => {
-            event.preventDefault();
-            let formData = new FormData(form);
-            let data = {};
-            for (let [key, value] of formData.entries()) {
-                data[key] = value;
-            }
-            console.log(data);
-            fetch("/settings/motor", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            });
-        });
-        screenArea.appendChild(form);
-    }
-
-    renderWifiScreen() {
-        let screenArea = document.getElementById("settingsPage");
-        screenArea.innerHTML = "";
-
-        let ssidInput = document.createElement("input");
-        ssidInput.type = "text";
-        ssidInput.id = "ssidInput";
-        ssidInput.placeholder = "SSID";
-
-        let passwordInput = document.createElement("input");
-        passwordInput.type = "password";
-        passwordInput.id = "passwordInput";
-        passwordInput.placeholder = "Password";
-
-        let sendButton = document.createElement("button");
-        sendButton.id = "WifiSendButton";
-        sendButton.innerHTML = "Save";
-
-        screenArea.appendChild(ssidInput);
-        screenArea.appendChild(passwordInput);
-        screenArea.appendChild(sendButton);
-    }
-
     renderLightsScreen() {
         let screenArea = document.getElementById("settingsPage");
         screenArea.innerHTML = "";
@@ -319,6 +88,7 @@ export class Menu {
         let sendButton = document.createElement("button");
         sendButton.id = "LedSendButton";
         sendButton.innerHTML = "Update LEDs";
+        sendButton.onclick = this.ledCallback;
         
         let colorPicker = document.createElement("input");
         colorPicker.type = "color";
@@ -336,14 +106,10 @@ export class Menu {
             case "Lights":
                 this.renderLightsScreen();
                 break;
-            case "Motors":
-                this.renderMotorsScreen();
-                break;
-            case "WiFi":
-                this.renderWifiScreen();
-                break;
             case "Input":
                 this.renderInputScreen();
+                break;
+            default:
                 break;
         }
     }
@@ -359,8 +125,12 @@ export class Menu {
     }
 
     highlightButton(idPrefix,choosenOption,optionCount){ 
+      console.log("Highlighting button");
+      console.log(idPrefix);
+      console.log(choosenOption);
         for(var i = 0; i < optionCount; i++){
             var elementId = idPrefix+i+"Button";
+            console.log(elementId);
             document.getElementById(elementId).style.borderColor = (i==choosenOption) ? "rgb(255, 204, 0)" : "rgb(179, 178, 175)";
         }
     }

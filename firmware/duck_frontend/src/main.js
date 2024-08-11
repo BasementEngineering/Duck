@@ -13,7 +13,7 @@ function onTick(){
 }
 
 function init(){
-    initUi();
+    initUi(sendLedData,globalContext);
     //document.getElementById("LedSendButton").onclick = sendLedData;
 
     myCommunicationManager.setInputJoysticks(globalContext.leftJoystick,globalContext.rightJoystick);
@@ -71,14 +71,14 @@ function onStatusUpdate(command){
     percentageToIcon(networkPercentage,"Network");
 }
 
-function updateControls(){
+/*function updateControls(){
 	if( (globalContext.leftJoystick!= null) && (globalContext.rightJoystick!= null) ){
 		var command = myCommunicationManagergenerateEmptyCommand();
 
-		if(mode == 1 || mode == 2){	
+		if(globalContext.mode == 1 || globalContext.mode == 2){	
 			command.id = Communication_Commands.ControlSD;
 		}
-		else if( (mode == 3) || (mode == 4) )
+		else if( (globalContext.mode == 3) || (globalContext.mode == 4) )
 		{
 			command.id = Communication_Commands.ControlLR;
 		}
@@ -87,7 +87,7 @@ function updateControls(){
 		command.parameters.push(globalContext.rightJoystick.getPercentage());
 		myCommunicationManagersendCommand(command);	
 	}
-}
+}*/
 
 function sendLedData(){
     var ledMode = document.getElementById("LedModeSelect").value;

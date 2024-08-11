@@ -7,6 +7,7 @@ const globalContext = {
     leftJoystick: null,
     rightJoystick: null,
     mode: 1,
+    trimValue: 0,
     batteryVoltage: 3.99
 };
 

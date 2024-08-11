@@ -189,7 +189,7 @@ function drivingSystemSettingsFormToJson() {
 
 function sendDriveSystemSettings() {
     console.log("sendDriveSystemSettings");
-    const url = "http://" + window.location.hostname + "/settings/drive_system";
+    const url = "http://" + window.location.hostname + "/settings/drivingsystem";
     const payload = drivingSystemSettingsFormToJson();
     sendJson(url, payload);
 }
