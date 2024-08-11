@@ -27,7 +27,7 @@ def to_byte_array_string(content_string):
         print(progress, end="\r")
         char_code = ord(char)
         if char_code > 127:
-            print(f"Warning: character '{char}' with code {char_code} is not ASCII")
+            #print(f"Warning: character '{char}' with code {char_code} is not ASCII")
             char_code = 0x00
 
         if index < length - 1:
@@ -59,7 +59,7 @@ def file_to_progmem_array_string(file_path: str, filename: str,artifact_name: st
     return arduino_string
 
 ### Functional Encoding ###
-def get_arduino_server_function(foldername: str,filename: str,index: bool = False,artifact_name: str = None):
+def get_arduino_server_function(foldername: str,filename: str,custom_path: str = None,artifact_name: str = None):
     if artifact_name == None:
         artifact_name = get_artifact_name(filename)
 
@@ -67,8 +67,8 @@ def get_arduino_server_function(foldername: str,filename: str,index: bool = Fals
     if foldername != None:
         path = "/" + foldername + "/" + filename
 
-    if index:
-        path = "/"
+    if custom_path != None:
+        path = custom_path
 
     server_function= f"server.on(\"{path}\", handle_{artifact_name});\n"
     return server_function
@@ -93,7 +93,7 @@ def create_functions_file(dist_folder_path):
     content_callbacks = ""
 
     # Index
-    index_function = get_arduino_server_function(None,'index.html',True)
+    index_function = get_arduino_server_function(None,'index.html',"/")
     server_functions+=index_function
 
     index_content_callback = get_arduino_content_callback('index.html')
@@ -102,7 +102,7 @@ def create_functions_file(dist_folder_path):
     # Settings
     folder_name = 'settings'
     filename = 'index.html'
-    server_functions += get_arduino_server_function(folder_name,filename,False,'settings_index')
+    server_functions += get_arduino_server_function(folder_name,filename,"/settings/",'settings_index')
     content_callbacks += get_arduino_content_callback(filename,'settings_index')
 
     # Assets

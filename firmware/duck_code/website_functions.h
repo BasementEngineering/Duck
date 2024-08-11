@@ -11,19 +11,19 @@
 void handle_index_html() { server.send_P(200, "text/html", index_html,index_html_length);}
 void handle_settings_index() { server.send_P(200, "text/html", settings_index,settings_index_length);}
 void handle_favicon_BrpTr_E7_ico() { server.send_P(200, "text/plain", favicon_BrpTr_E7_ico,favicon_BrpTr_E7_ico_length);}
-void handle_main_DeMo6euZ_css() { server.send_P(200, "text/plain", main_DeMo6euZ_css,main_DeMo6euZ_css_length);}
-void handle_main_K39kyjpY_js() { server.send_P(200, "application/javascript", main_K39kyjpY_js,main_K39kyjpY_js_length);}
+void handle_main_DiTAKUtS_js() { server.send_P(200, "application/javascript", main_DiTAKUtS_js,main_DiTAKUtS_js_length);}
+void handle_main_QxcDOFYF_css() { server.send_P(200, "text/plain", main_QxcDOFYF_css,main_QxcDOFYF_css_length);}
 void handle_modulepreload_polyfill_B5Qt9EMX_js() { server.send_P(200, "application/javascript", modulepreload_polyfill_B5Qt9EMX_js,modulepreload_polyfill_B5Qt9EMX_js_length);}
-void handle_settings_C8cUV88T_js() { server.send_P(200, "application/javascript", settings_C8cUV88T_js,settings_C8cUV88T_js_length);}
+void handle_settings_bdPJGMAj_js() { server.send_P(200, "application/javascript", settings_bdPJGMAj_js,settings_bdPJGMAj_js_length);}
 
 void setupServerFunctions() {
 server.on("/", handle_index_html);
-server.on("/settings/index.html", handle_settings_index);
+server.on("/settings/", handle_settings_index);
 server.on("/assets/favicon-BrpTr-E7.ico", handle_favicon_BrpTr_E7_ico);
-server.on("/assets/main-DeMo6euZ.css", handle_main_DeMo6euZ_css);
-server.on("/assets/main-K39kyjpY.js", handle_main_K39kyjpY_js);
+server.on("/assets/main-DiTAKUtS.js", handle_main_DiTAKUtS_js);
+server.on("/assets/main-QxcDOFYF.css", handle_main_QxcDOFYF_css);
 server.on("/assets/modulepreload-polyfill-B5Qt9EMX.js", handle_modulepreload_polyfill_B5Qt9EMX_js);
-server.on("/assets/settings-C8cUV88T.js", handle_settings_C8cUV88T_js);
+server.on("/assets/settings-bdPJGMAj.js", handle_settings_bdPJGMAj_js);
 }
 
 #endif

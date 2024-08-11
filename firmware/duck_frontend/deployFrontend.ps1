@@ -1,3 +1,6 @@
+Write-Host "Building with vite"
+npx vite build
+
 # Run the Python program
 Write-Host "Running the Python program to encode the Arduino files"
 python encodeInArduino.py

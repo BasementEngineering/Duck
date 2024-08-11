@@ -56,7 +56,6 @@ export class CommunicationManager{
 	updateControls(){
 		if( (this.leftJoystick!= null) && (this.rightJoystick!= null) ){
 			var command = this.parser.generateEmptyCommand();
-			//console.log(command);
 	
 			var mode = globalContext.mode;
 			if(mode == 1 || mode == 2){	
@@ -67,13 +66,34 @@ export class CommunicationManager{
 				command.id = Communication_Commands.ControlLR;
 			}
 			command.parameterCount = 2;
-			command.parameters.push(this.leftJoystick.getPercentage()); //steering
-			command.parameters.push(this.rightJoystick.getPercentage());
+			command.parameters.push(this.leftJoystick.getPercentage());
+
+			//Adding trim to steering
+			if(mode == 1 || mode == 2){
+				var steeringValue = this.rightJoystick.getPercentage();
+				steeringValue = this.addTrimToSteering(steeringValue);
+				command.parameters.push(steeringValue);
+			}
+			else{
+				command.parameters.push(this.rightJoystick.getPercentage());
+			}
 			this.sendCommand(command);	
 		}
 
 	}
 
+	addTrimToSteering(steeringValue){
+		var trim = globalContext.trimValue;
+		
+		steeringValue = (steeringValue - trim);
+		if(steeringValue > 100){
+			steeringValue = 100;
+		}
+		else if(steeringValue < -100){
+			steeringValue = -100;
+		}
+		return steeringValue;
+	}
 	// Heartbeat Specific Stuff
 	
 	startHeartbeatCheck(){

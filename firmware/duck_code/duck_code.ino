@@ -8,13 +8,15 @@
 #include "FrontendServer.h"
 #include "Parser.h"
 
+PropulsionSystem* propulsionSystem = NULL;
+/*
 #if defined(RUDDER_STEERING)
 RudderPropulsion propulsionSystem(MOTOR_EN,MOTOR_IN1,MOTOR_IN2,MOTOR_IN3);
 #elif defined(ESC_PROPULSION)
 EscPropulsion propulsionSystem(MOTOR_IN1,MOTOR_IN2);
 #else
 PropulsionSystem propulsionSystem(MOTOR_EN,MOTOR_IN1,MOTOR_IN2,MOTOR_IN3,MOTOR_IN4);
-#endif
+#endif*/
 LightBar lightBar(LED_COUNT, LED_PIN);
 Settings settings;
 
@@ -32,23 +34,47 @@ void switchState(State newState){
   Serial.println("Switching state ");
   Serial.print(state);Serial.print(" to ");Serial.println(newState);
   if(newState != WORKING){
-    propulsionSystem.stop();
+    propulsionSystem->stop();
   }
   state = newState;
   showStatus(state);
+}
+
+void setupPropulsionSystem(){
+  Serial.println("Setting up Propulsion System");
+  if(settings.steeringType == "Rudder"){
+    Serial.println("Setting up Rudder Propulsion");
+    propulsionSystem = new RudderPropulsion(settings.motor1_pinE,settings.motor1_pinA,settings.motor1_pinB,settings.motor2_pinA);
+  }
+  else{
+    if(settings.motor1_driver == "ESC"){
+      Serial.println("Setting up ESC Propulsion");
+      propulsionSystem = new EscPropulsion(settings.motor1_pinA,settings.motor1_pinB);
+    }
+    else{
+      Serial.println("Setting up regular Propulsion System");
+      propulsionSystem = new PropulsionSystem(settings.motor1_pinE,,settings.motor1_pinA,settings.motor1_pinB,settings.motor2_pinA,settings.motor2_pinB);
+    }
+  }
+  
+  
+  propulsionSystem->initPins();
 }
 
 void setup(){
   Serial.setDebugOutput(true);
   Serial.begin(115200);
   Serial.println("Starting Setup");
-  propulsionSystem.initPins();
+
+  settings.getSettings();
+
+  setupPropulsionSystem();
+
   Battery_init();
   lightBar.initLeds();
   lightBar.setMode(SOLID);
   lightBar.setMainColor(200,50,0);
 
-  settings.getSettings();
   Wifi_setApCredentials(settings.ap_ssid,settings.ap_password);
   Wifi_setup();
   lightBar.setMode(BLINKING);
@@ -191,12 +217,12 @@ void motorCallback(Command command){
     case ControlLR:
       leftSpeed = command.parameters[0];
       rightSpeed = command.parameters[1];
-      propulsionSystem.moveLeft(leftSpeed);
-      propulsionSystem.moveRight(rightSpeed);
+      propulsionSystem->moveLeft(leftSpeed);
+      propulsionSystem->moveRight(rightSpeed);
       break;
     case ControlSD:
-      propulsionSystem.setSpeed(command.parameters[0]);
-      propulsionSystem.setDirection(-command.parameters[1]);
+      propulsionSystem->setSpeed(command.parameters[0]);
+      propulsionSystem->setDirection(-command.parameters[1]);
       break;
     default: 
     //Serial.println("in switch");

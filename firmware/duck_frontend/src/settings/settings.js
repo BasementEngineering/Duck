@@ -1,3 +1,5 @@
+var host = window.location.hostname;
+
 // JSON Scheme for form generation
 var drivingSystemSettings = {
     steeringType: {
@@ -89,21 +91,52 @@ var drivingSystemSettings = {
     }
 };
 
+var wifiSettings = {
+    ap_ssid: {
+        value: "BoatyMcBoatface",
+        type: "string",
+        title: "SSID"
+    },
+    ap_password: {
+        value: "ImTheCaptainNow",
+        type: "string",
+        title: "Password"
+    },
+    sta_ssid: {
+        value: "Network Name",
+        type: "string",
+        title: "SSID"
+    },
+    sta_password: {
+        value: "",
+        type: "string",
+        title: "Password"
+    }
+
+};
+//var host = 
+
+function init() {
+    console.log("settings.js");
+    generateDriveSystemForm();
+    setupWifiForm();
+    document.getElementById("send-drive-system-settings").addEventListener("click", sendDriveSystemSettings);
+
+    //getJson("http://" + host + "/settings/drivingsystem","driving-system-form");
+    //getJson("http://" + host + "/settings/wifi","wifi-form");
+}
+
+init();
+
 // Form generation/ setup
 function setupWifiForm() {
     document.getElementById("wifi-form").onsubmit = function (event) {
         event.preventDefault();
         console.log("Form submitted");
-        var myForm = document.getElementById("wifi-form");
-        console.log(myForm);
-        var formData = new FormData(myForm);
-        console.log(formData.entries());
-
-        // Display the key/value pairs
-        for (const pair of formData.entries()) {
-            console.log(pair[0], pair[1]);
-        }
+        sendWifiSettings();
     }
+
+    updateFromFromJson("wifi-form",wifiSettings,true);
 }
 
 function generateDriveSystemForm() {
@@ -112,7 +145,6 @@ function generateDriveSystemForm() {
 
     for (const key in drivingSystemSettings) {
         const setting = drivingSystemSettings[key];
-
         const linebreak = document.createElement("br");
         const label = document.createElement("label");
         label.textContent = setting.title || key;
@@ -158,20 +190,18 @@ function generateDriveSystemForm() {
     form.appendChild(submitButton);
 }
 
-// Sending functions
-function sendJson(url, json) {
-    console.log("sendJson");
-    console.log(json);
-    fetch(url, {
-        method: "POST",
-        body: JSON.stringify(json),
-        headers: {
-            "Content-Type": "application/json"
-        }
-    })
-    .then(response => response.json())
-    .then(data => console.log(data))
-    .catch(error => console.log(error));
+// Form to JSON trnaslators
+function wifiSettingsFormToJson() {
+    console.log("wifiSettingsFormToJson");
+    const form = document.getElementById("wifi-form");
+    const formData = new FormData(form);
+    var json = {};
+    
+    for (const [key, value] of formData.entries()) {
+        json[key] = value;
+    }
+
+    return json;
 }
 
 function drivingSystemSettingsFormToJson() {
@@ -184,29 +214,58 @@ function drivingSystemSettingsFormToJson() {
         json[key] = value;
     }
 
+    console.log(json);
     return json;
 }
 
+function updateFromFromJson(formId,json,sheme=false){
+    const form = document.getElementById(formId);
+    for (const key in json) {
+        const input = form.querySelector(`input[name=${key}]`);
+        if (input) {
+            if(sheme){ // This is for initial setup using the sheme
+                input.value = json[key].value;
+            }
+            else{ // Server message will be a flat structure
+                input.value = json[key];
+            }
+        }
+    }
+}
+
+// Communication Functions
 function sendDriveSystemSettings() {
     console.log("sendDriveSystemSettings");
-    const url = "http://" + window.location.hostname + "/settings/drivingsystem";
+    const url = "http://" + host + "/settings/drivingsystem";
     const payload = drivingSystemSettingsFormToJson();
-    sendJson(url, payload);
+    sendJson(url, payload,"driving-system-form");
 }
 
 function sendWifiSettings() {
     console.log("sendWifiSettings");
-    const url = "http://" + window.location.hostname + "/settings/wifi";
+    const url = "http://" + host + "/settings/wifi";
     const payload = wifiSettingsFormToJson();
-    sendJson(url, payload);
+    sendJson(url, payload,"wifi-form");
 }
 
-function init() {
-    console.log("settings.js");
-    generateDriveSystemForm();
-    setupWifiForm();
-    document.getElementById("send-drive-system-settings").addEventListener("click", sendDriveSystemSettings);
+function getJson(url,formName=null) {
+    fetch(url)
+    .then(response => response.json())
+    .then(data => {if(formName){updateFromFromJson(formName,data,false);}})
+    .catch(error => console.log(error));
 }
 
-init();
-
+function sendJson(url, json,formName=null) {
+    console.log("sendJson");
+    console.log(json);
+    fetch(url, {
+        method: "POST",
+        body: JSON.stringify(json),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {if(formName){updateFromFromJson(formName,data,false);}})
+    .catch(error => console.log(error));
+}
