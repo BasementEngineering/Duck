@@ -2,121 +2,115 @@
 #define PROPULSIONSYSTEM_H
 
 #include <Arduino.h>
+#include "MotorDriver.h"
 
-class MotorDriver{
-  protected:
-    int en;
-    int inA;
-    int inB;
+#define DEBUG_PROPULSION
 
-    int minOut = 0;
-    int maxOut = 100;
-
-  public:
-    MotorDriver(int _inA, int _inB = -1, int _en = -1){
-      inA = _inA;
-      inB = _inB;
-      en = _en;
-    }
-
-  void init(){
-    if(en != -1){
-      pinMode(en, OUTPUT);
-    }
-    pinMode(inA, OUTPUT);
-    if(inB != -1){
-      pinMode(inB, OUTPUT);
-    }
-  }
-
-  virtual void setSpeed(int newSpeed);
-  void stop();
-  void update();
-  void motor(int speed);
-};
-
-class HBridgeDriver : public MotorDriver
+class PropulsionSystem
 {
 public:
-  HBridgeDriver(int _inA, int _inB, int _en) : MotorDriver(_inA, _inB, _en) {}
+  virtual void init();
+  virtual void stop();
+  virtual void setReversed(bool reversed1, bool reversed2);
+  virtual void setSpeed(int newSpeed);
+  virtual void setDirection(int newDirection);
 
-  void stop()
+  virtual void moveLeft(int speedPercentage);
+  virtual void moveRight(int speedPercentage);
+
+protected:
+  MotorDriver *motor1 = nullptr;
+  MotorDriver *motor2 = nullptr;
+  int currentSpeed = 0;
+  int currentDirection = 0;
+};
+
+class DifferentialDrive : public PropulsionSystem
+{
+public:
+  DifferentialDrive(int _in1_A, int _in2_A): PropulsionSystem()
   {
-    if (en != -1)
-    {
-      digitalWrite(en, LOW);
-    }
-    digitalWrite(inA, LOW);
-    digitalWrite(inB, LOW);
+    motor1 = new EscDriver(_in1_A);
+    motor2 = new EscDriver(_in2_A);
   }
 
-  void setSpeed(int speedPercentage)
+  DifferentialDrive(int _in1_A, int _in1_B, int _in2_A, int _in2_B, int _en = -1): PropulsionSystem()
   {
-    int minPwm = (minOut * 255)/100;
-    int maxPwm = (maxOut * 255)/100;
-    uint8_t pwm = 0;
+    motor1 = new HBridgeDriver(_in1_A, _in1_B, _en);
+    motor2 = new HBridgeDriver(_in2_A, _in2_B);
+  }
 
-    if (en != -1){
-      digitalWrite(en, HIGH);
-    }
+  void init()
+  {
+    motor1->init();
+    motor2->init();
+  }
+
+  void stop(){
+    motor1->stop();
+    motor2->stop();
+  }
+
+  void setSpeed(int newSpeed){
+    currentSpeed = newSpeed;
+    translateToMotors(currentSpeed,currentDirection);
+  }
+
+  void setDirection(int newDirection){
+    currentDirection = newDirection;
+    translateToMotors(currentSpeed,currentDirection);
+  }
+
+  void setReversed(bool reversed1, bool reversed2)
+  {
+    motor1->setReversed(reversed1);
+    motor2->setReversed(reversed2);
+  }
+
+ void translateToMotors(int speedPercentage, int direction){
     
-    if (speedPercentage == 0)
-    {
-      pwm = 0;
-      digitalWrite(inA, LOW);
-      analogWrite(inB, LOW);
-    }
-    else if (speedPercentage > 0)
-    {
-      pwm = ((maxPwm - minPwm) * speedPercentage) / 100;
-      digitalWrite(inA, LOW);
-      analogWrite(inB, pwm);
-    }
-    else if (speedPercentage < 0)
-    {
-      pwm = ((maxPwm - minPwm) * (-speedPercentage)) / 100;
-      digitalWrite(inA, pwm);
-      analogWrite(inB, LOW);
-    }
+    #ifdef DEBUG_PROPULSION
+      Serial.print("Current Speed: ");Serial.println(currentSpeed);
+      Serial.print("Current Direction: ");Serial.println(currentDirection);
+    #endif
 
-    Serial.println("Moving motor");
-    Serial.println(speedPercentage);
-    Serial.println(minPwm);
-    Serial.println(maxPwm);
-    Serial.println(pwm);
+    int leftSpeed = 0;
+    int rightSpeed = 0;
+  
+    if(speedPercentage == 0){
+      stop();
+    }
+    else{
+      if(direction == 0){
+        leftSpeed = speedPercentage;
+        rightSpeed = speedPercentage;
+      }
+      if(direction < 0){ //Turning Right
+        leftSpeed = ((100+direction)*speedPercentage)/100;
+        rightSpeed = speedPercentage;
+      }
+      else if(direction > 0){
+        leftSpeed = speedPercentage;
+        rightSpeed = ((100-direction)*speedPercentage)/100;
+      }
+      #ifdef DEBUG_PROPULSION
+      Serial.print("Left Speed: ");Serial.println(leftSpeed);
+      Serial.print("Right Speed: ");Serial.println(rightSpeed);
+      #endif
+
+      moveLeft(leftSpeed);
+      moveRight(rightSpeed);
+    }
+  
+  }
+
+  void moveLeft(int speedPercentage){
+    motor1->setSpeed(speedPercentage);
+  }
+
+  void moveRight(int speedPercentage){
+    motor2->setSpeed(speedPercentage);
   }
 };
-/*
-class PropulsionSystem{
-  public: 
-  PropulsionSystem(int _en, int _in1, int _in2, int _in3, int _in4);
-  void initPins();
-
-  void stop();
-
-  void setSpeed(int newSpeed);
-  void setDirection(int newDirection);
-  void runTestSequence();
-  void moveLeft(int speedPercentage);
-  void moveRight(int speedPercentage);
-  
-  
-private:
-
-  void translateToMotors(int speed, int direction);
-  void moveMotor(int pin1,int pin2, int speedPercentage,int minPwm, int maxPwm);
-
-  private:
-    int en;
-    int in1;
-    int in2;
-    int in3;
-    int in4;
-
-    int currentSpeed = 0;
-    int currentDirection = 0;
-
-    void moveMotor(int pin1,int pin2,int speed);
-};*/
 
 #endif

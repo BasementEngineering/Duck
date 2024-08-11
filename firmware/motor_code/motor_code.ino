@@ -1,7 +1,5 @@
 #include "PropulsionSystem.h"
-//#include "RudderPropulsion.h"
-//#include "EscPropulsion.h"
-
+#include "MotorDriver.h"
 /*
 PropulsionSystem* propulsionSystem = NULL;
 
@@ -26,28 +24,71 @@ void setupPropulsionSystem(){
   propulsionSystem->initPins();
 }*/
 
-MotorDriver* motorDriver = NULL;
+//MotorDriver* motorDriver = NULL;
 
 void setup(){
   Serial.begin(115200);
   Serial.println("Starting Setup");
 
-  //setupPropulsionSystem();
-  motorDriver = new HBridgeDriver(12,13,14);
+  testDifferentialPropulsionSystem();
+  testMotor();
+}
+
+void testDifferentialPropulsionSystem(){
+  PropulsionSystem* differentialDrive = new DifferentialDrive(15,13,14,16);//
+  
+  Serial.println("Testing Propulsion System");
+  differentialDrive->setReversed(false,false);
+  
+  Serial.println("Going Forward");
+  for(int i = 0; i < 100; i+=10){
+    differentialDrive->setSpeed(i);
+    delay(500);
+  }
+  Serial.println("Slowing Down");
+  for(int i = 100; i > 0; i-=10){
+    differentialDrive->setSpeed(i);
+    delay(500);
+  }
+  Serial.println("Reversing");
+  for(int i = 0; i > -100; i-=10){
+    differentialDrive->setSpeed(i);
+    delay(500);
+  }
+  Serial.println("Slowing Down");
+  for(int i = -100; i < 0; i+=10){
+    differentialDrive->setSpeed(i);
+    delay(500);
+  }
+}
+
+void testMotor(){
+  MotorDriver* motorDriver = new HBridgeDriver(15,13);
   Serial.println("Ready");
+  motorDriver->setReversed(true);
+  
+  Serial.println("Going Forward");
+  for(int i = 0; i < 100; i+=10){
+    motorDriver->setSpeed(i);
+    delay(500);
+  }
+  Serial.println("Slowing Down");
+  for(int i = 100; i > 0; i-=10){
+    motorDriver->setSpeed(i);
+    delay(500);
+  }
+  Serial.println("Reversing");
+  for(int i = 0; i > -100; i-=10){
+    motorDriver->setSpeed(i);
+    delay(500);
+  }
+  Serial.println("Slowing Down");
+  for(int i = -100; i < 0; i+=10){
+    motorDriver->setSpeed(i);
+    delay(500);
+  }
 }
 
 void loop(){
-  for(int i = 0; i < 100; i+=10){
-  motorDriver->setSpeed(i);
-  delay(1000);
-  }
-  for(int i = 100; i > -100; i-=10){
-  motorDriver->setSpeed(i);
-  delay(1000);
-  }
-  for(int i = -100; i < 0; i+=10){
-  motorDriver->setSpeed(i);
-  delay(1000);
-  }
+  
 }

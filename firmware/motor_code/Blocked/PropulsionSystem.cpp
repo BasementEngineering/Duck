@@ -4,13 +4,7 @@
 
 //#define DEBUG_PROPULSION
 
-PropulsionSystem::PropulsionSystem(int _en, int _in1, int _in2, int _in3, int _in4){
-  en = _en;
-  in1 = _in1;
-  in2 = _in2;
-  in3 = _in3;
-  in4 = _in4;
-}
+PropulsionSystem::PropulsionSystem(){}
 
 void PropulsionSystem::initPins(){
   pinMode(en,OUTPUT);
