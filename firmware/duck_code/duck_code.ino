@@ -1,7 +1,5 @@
 #include "Config.h"
 #include "PropulsionSystem.h"
-#include "RudderPropulsion.h"
-#include "EscPropulsion.h"
 #include "LightBar.h"
 #include "Battery.h"
 #include "Wifi.h"
@@ -42,23 +40,29 @@ void switchState(State newState){
 
 void setupPropulsionSystem(){
   Serial.println("Setting up Propulsion System");
-  if(settings.steeringType == "Rudder"){
+  /*if(settings.steeringType == "Rudder"){
     Serial.println("Setting up Rudder Propulsion");
     propulsionSystem = new RudderPropulsion(settings.motor1_pinE,settings.motor1_pinA,settings.motor1_pinB,settings.motor2_pinA);
-  }
-  else{
+  }*/
+  /*else{
     if(settings.motor1_driver == "ESC"){
       Serial.println("Setting up ESC Propulsion");
       propulsionSystem = new EscPropulsion(settings.motor1_pinA,settings.motor1_pinB);
     }
-    else{
+    else{*/
+    Serial.println("Settings: ");
+    Serial.print("Motor1 Pin A: ");Serial.println(settings.motor1_pinA);
+    Serial.print("Motor1 Pin B: ");Serial.println(settings.motor1_pinB);
+    Serial.print("Motor2 Pin A: ");Serial.println(settings.motor2_pinA);
+    Serial.print("Motor2 Pin B: ");Serial.println(settings.motor2_pinB);
+
       Serial.println("Setting up regular Propulsion System");
-      propulsionSystem = new PropulsionSystem(settings.motor1_pinE,,settings.motor1_pinA,settings.motor1_pinB,settings.motor2_pinA,settings.motor2_pinB);
-    }
-  }
+      propulsionSystem = new DifferentialDrive(settings.motor1_pinA,settings.motor1_pinB,settings.motor2_pinA,settings.motor2_pinB,settings.motor1_pinE);
+    /* }
+  }*/
   
   
-  propulsionSystem->initPins();
+  propulsionSystem->init();
 }
 
 void setup(){

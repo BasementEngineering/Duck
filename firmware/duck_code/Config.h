@@ -135,11 +135,11 @@ public:
   void getSettings()
   {
     preferences.begin("settings", false);
-    motor1_pinA = preferences.getUInt("motor1_pinA", 13);
-    motor1_pinB = preferences.getUInt("motor1_pinB", 12);
+    motor1_pinA = preferences.getUInt("motor1_pinA", 15);
+    motor1_pinB = preferences.getUInt("motor1_pinB", 13);
     motor1_pinE = preferences.getUInt("motor1_pinE", 15);
     motor2_pinA = preferences.getUInt("motor2_pinA", 14);
-    motor2_pinB = preferences.getUInt("motor2_pinB", 0);
+    motor2_pinB = preferences.getUInt("motor2_pinB", 16);
     motor2_pinE = preferences.getUInt("motor2_pinE", 15);
 
     motor1_center = preferences.getInt("motor1_center", 50);
