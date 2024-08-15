@@ -8,13 +8,16 @@
 
 #define DEBUG
 
-String ssid = "Duck2";
-String password = APPSK;
+//AP
+String ssid;
+String password;
 
-const char *networkSsid = NETWORK_SSID;
-const char *networkPassword = NETWORK_PSK;
+String networkSsid;
+String networkPassword;
 
-const char* dnsName = APSSID;
+bool stationMode = false;
+
+const char* dnsName = "MiniKenterprise";
 
 bool wifiOnline = false;
 unsigned long lastWifiUpdate = 0;
@@ -54,9 +57,14 @@ int findLowestRssiChannel();
 int getBestChannel();
 
 void setApCredentials(String _ssid, String _password);
+void setNetworkCredentials(String _ssid, String _password);
 
 void startStation();
 void startAp();
+
+void Wifi_setStationMode(bool _stationMode){
+  stationMode = _stationMode;
+}
 
 void Wifi_setup(){
   scanWiFi();
@@ -70,31 +78,42 @@ void Wifi_start(){
   if( (millis() - lastWifiUpdate) > nextWaitInterval){
     lastWifiUpdate = millis();
     wifi_set_sleep_type(NONE_SLEEP_T);
-  #ifdef AP_MODE
+    if(stationMode){
+      startStation();
+    }
+    else{
+      startAp();
+    }
     startAp();
-  #else
-    startStation();
-  #endif
   startMdns();
   }
 }
 
 bool Wifi_connected(){
-  #ifdef AP_MODE
+  if (!stationMode){
     return WiFi.softAPgetStationNum();
-  #else
+  }
+  else{
     return WiFi.isConnected();
-  #endif
+  }
 }
 
 void startStation(){
+  Serial.println("Starting Station");
+  Serial.println("Connecting to Network");
+  Serial.println(networkSsid);
+  
   WiFi.disconnect();
   if(attemptCounter == 0){
+    Serial.println("First Attempt");
     WiFi.mode(WIFI_STA);
-    WiFi.begin(networkSsid, networkPassword);
+    const char *c_networkSsid = networkSsid.c_str();
+    const char *c_networkPassword = networkPassword.c_str();
+    WiFi.begin(c_networkSsid, c_networkPassword);
     attemptCounter++;
   }
   if(attemptCounter > 0){
+    Serial.println("Subsequent Attempts");
     if(WiFi.waitForConnectResult() == WL_CONNECTED){
        wifiOnline = true;
     }
@@ -106,8 +125,13 @@ void Wifi_setApCredentials(String _ssid, String _password){
   password = _password;
 }
 
-void startAp(){
+void Wifi_setNetworkCredentials(String _ssid, String _password){
+  networkSsid = _ssid;
+  networkPassword = _password;
+}
 
+void startAp(){
+    Serial.println("Starting AP");
     const char *c_ssid = ssid.c_str();
     const char *c_password = password.c_str();
     WiFi.disconnect();

@@ -15,7 +15,7 @@ EscPropulsion propulsionSystem(MOTOR_IN1,MOTOR_IN2);
 #else
 PropulsionSystem propulsionSystem(MOTOR_EN,MOTOR_IN1,MOTOR_IN2,MOTOR_IN3,MOTOR_IN4);
 #endif*/
-LightBar lightBar(LED_COUNT, LED_PIN);
+LightBar* lightBar = nullptr;
 Settings settings;
 
 enum State{
@@ -71,21 +71,26 @@ void setup(){
   Serial.println("Starting Setup");
 
   settings.getSettings();
+  settings.printAllSettings();
 
   setupPropulsionSystem();
 
   Battery_init();
-  lightBar.initLeds();
-  lightBar.setMode(SOLID);
-  lightBar.setMainColor(200,50,0);
+
+  lightBar = new LightBar(settings.led_count, settings.led_pin);
+  lightBar->initLeds();
+  lightBar->setMode(SOLID);
+  lightBar->setMainColor(200,50,0);
 
   Wifi_setApCredentials(settings.ap_ssid,settings.ap_password);
+  Wifi_setNetworkCredentials(settings.sta_ssid,settings.sta_password);
+  Wifi_setStationMode(settings.station_mode);
   Wifi_setup();
-  lightBar.setMode(BLINKING);
+  lightBar->setMode(BLINKING);
 
   FrontendServer_setSettingsObject(&settings);
   FrontendServer_init();
-  //lightBar.update()
+  //lightBar->update()
 
   Serial.println("Starting Backend");
   Parser_setup(motorCallback,ledCallback);
@@ -116,6 +121,7 @@ void runStateMachine(){
     case STARTING_WIFI:
       Wifi_start();
       if(Wifi_online()){
+        Serial.println("StateMAchine: Wifi is online");
         FrontendServer_init();
         switchState(WAITING_FOR_WIFI_CLIENT);
       }
@@ -157,20 +163,20 @@ void runStateMachine(){
 void showStatus(int stateCode){
   switch(stateCode){
     case STARTING_WIFI:
-      lightBar.setMainColor(0,0,255);
-      lightBar.setMode(BLINKING);
+      lightBar->setMainColor(0,0,255);
+      lightBar->setMode(BLINKING);
       break;
     case WAITING_FOR_WIFI_CLIENT:
-      lightBar.setMainColor(0,0,255);
-      lightBar.setMode(BLINKING);
+      lightBar->setMainColor(0,0,255);
+      lightBar->setMode(BLINKING);
       break;
     case WAITING_FOR_FRONTEND:
-      lightBar.setMainColor(0,200,000);
-      lightBar.setMode(BLINKING);
+      lightBar->setMainColor(0,200,000);
+      lightBar->setMode(BLINKING);
       break;
     case WORKING:
-      lightBar.setMainColor(YELLOW);
-      lightBar.setMode(KNIGHT_RIDER);
+      lightBar->setMainColor(YELLOW);
+      lightBar->setMode(KNIGHT_RIDER);
       break;
     default:
       break;
@@ -206,7 +212,7 @@ bool timoutDone(){
 //Regular Update helpers
 void updateHardware(){
   Battery_update();
-  lightBar.update();
+  lightBar->update();
   yield();
 }
 
@@ -237,8 +243,8 @@ void motorCallback(Command command){
 void ledCallback(Command command){
   //Serial.println("LED Callback");
   if(command.parameterCount == 4){
-    lightBar.setMode(command.parameters[0]);
-    lightBar.setMainColor(command.parameters[1],command.parameters[2],command.parameters[3]);
+    lightBar->setMode(command.parameters[0]);
+    lightBar->setMainColor(command.parameters[1],command.parameters[2],command.parameters[3]);
   }
 }
 

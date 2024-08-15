@@ -120,13 +120,29 @@ function init() {
     console.log("settings.js");
     generateDriveSystemForm();
     setupWifiForm();
+    setupLedForm();
     document.getElementById("send-drive-system-settings").addEventListener("click", sendDriveSystemSettings);
 
-    //getJson("http://" + host + "/settings/drivingsystem","driving-system-form");
-    //getJson("http://" + host + "/settings/wifi","wifi-form");
+    getJson("http://" + host + "/settings/drivingsystem","driving-system-form");
+    getJson("http://" + host + "/settings/wifi","wifi-form");
+    getJson("http://" + host + "/settings/leds","led-form");
 }
 
 init();
+
+function setupLedForm() {
+    document.getElementById("led-form").onsubmit = function (event) {
+        event.preventDefault();
+        console.log("LED form submitted");
+        sendLedSettings();
+    }
+}
+
+function sendLedSettings() {
+    const url = "http://" + host + "/settings/leds";
+    const payload = formToJson("led-form");
+    sendJson(url, payload,"led-form");
+}
 
 // Form generation/ setup
 function setupWifiForm() {
@@ -191,9 +207,8 @@ function generateDriveSystemForm() {
 }
 
 // Form to JSON trnaslators
-function wifiSettingsFormToJson() {
-    console.log("wifiSettingsFormToJson");
-    const form = document.getElementById("wifi-form");
+function formToJson(formId) {
+    const form = document.getElementById(formId);
     const formData = new FormData(form);
     var json = {};
     
@@ -201,20 +216,6 @@ function wifiSettingsFormToJson() {
         json[key] = value;
     }
 
-    return json;
-}
-
-function drivingSystemSettingsFormToJson() {
-    console.log("drivingSystemSettingsFormToJson");
-    const form = document.getElementById("driving-system-form");
-    const formData = new FormData(form);
-    var json = {};
-
-    for (const [key, value] of formData.entries()) {
-        json[key] = value;
-    }
-
-    console.log(json);
     return json;
 }
 
@@ -237,18 +238,19 @@ function updateFromFromJson(formId,json,sheme=false){
 function sendDriveSystemSettings() {
     console.log("sendDriveSystemSettings");
     const url = "http://" + host + "/settings/drivingsystem";
-    const payload = drivingSystemSettingsFormToJson();
+    const payload = formToJson("driving-system-form");
     sendJson(url, payload,"driving-system-form");
 }
 
 function sendWifiSettings() {
     console.log("sendWifiSettings");
     const url = "http://" + host + "/settings/wifi";
-    const payload = wifiSettingsFormToJson();
+    const payload = formToJson("wifi-form");
     sendJson(url, payload,"wifi-form");
 }
 
 function getJson(url,formName=null) {
+    console.log("getting json");
     fetch(url)
     .then(response => response.json())
     .then(data => {if(formName){updateFromFromJson(formName,data,false);}})

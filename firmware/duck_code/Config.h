@@ -5,14 +5,7 @@
 // Set the Mini Kenterprise up in AP Mode to use it standalone without a WiFi network
 #define AP_MODE
 
-// Access Point Settings
-#define APSSID "Ente"
-#define APPSK "RowYourBoat"
 #define MAX_WIFI_CONNECTIONS 2
-
-// Station Settings
-#define NETWORK_SSID "**********"
-#define NETWORK_PSK "**********"
 
 // Motor Settings
 #define MIN_PWM_L 1000
@@ -110,14 +103,18 @@ public:
   int motor2_max = 100;
   int motor2_min = 0;
 
-  String steeringType = "Differential Thrust";
-  String motor1_driver = "ESC";
-  String motor2_driver = "ESC";
+  String steeringType;
+  String motor1_driver;
+  String motor2_driver;
 
+  bool station_mode;
   String ap_ssid;
   String ap_password;
   String sta_ssid;
   String sta_password;
+
+  int led_pin;
+  int led_count;
 
   Preferences preferences;
 
@@ -132,6 +129,32 @@ public:
     preferences.end();
   }
 
+  void printAllSettings(){
+    Serial.println("Settings:");
+    Serial.println("Motor 1 Pin A: " + String(motor1_pinA));
+    Serial.println("Motor 1 Pin B: " + String(motor1_pinB));
+    Serial.println("Motor 1 Pin E: " + String(motor1_pinE));
+    Serial.println("Motor 2 Pin A: " + String(motor2_pinA));
+    Serial.println("Motor 2 Pin B: " + String(motor2_pinB));
+    Serial.println("Motor 2 Pin E: " + String(motor2_pinE));
+    Serial.println("Motor 1 Center: " + String(motor1_center));
+    Serial.println("Motor 1 Max: " + String(motor1_max));
+    Serial.println("Motor 1 Min: " + String(motor1_min));
+    Serial.println("Motor 2 Center: " + String(motor2_center));
+    Serial.println("Motor 2 Max: " + String(motor2_max));
+    Serial.println("Motor 2 Min: " + String(motor2_min));
+    Serial.println("Steering Type: " + steeringType);
+    Serial.println("Motor 1 Driver: " + motor1_driver);
+    Serial.println("Motor 2 Driver: " + motor2_driver);
+    Serial.println("Station Mode: " + String(station_mode));
+    Serial.println("AP SSID: " + ap_ssid);
+    Serial.println("AP Password: " + ap_password);
+    Serial.println("STA SSID: " + sta_ssid);
+    Serial.println("STA Password: " + sta_password);
+    Serial.println("LED Pin: " + String(led_pin));
+    Serial.println("LED Count: " + String(led_count));
+  }
+
   void getSettings()
   {
     preferences.begin("settings", false);
@@ -143,37 +166,58 @@ public:
     motor2_pinE = preferences.getUInt("motor2_pinE", 15);
 
     motor1_center = preferences.getInt("motor1_center", 50);
-    motor1_driver = preferences.getString("motor1_driver", "ESC");
     motor1_max = preferences.getInt("motor1_max", 100);
     motor1_min = preferences.getInt("motor1_min", 0);
     motor2_center = preferences.getInt("motor2_center", 50);
-    motor2_driver = preferences.getString("motor2_driver", "ESC");
     motor2_max = preferences.getInt("motor2_max", 100);
     motor2_min = preferences.getInt("motor2_min", 0);
-    steeringType = preferences.getString("steeringType", "Differential Thrust");
 
+    steeringType = preferences.getString("steeringType", "Differential Thrust");
+    motor2_driver = preferences.getString("motor2_driver", "H-Bridge");
+    motor1_driver = preferences.getString("motor1_driver", "H-Bridge");
+
+    station_mode = preferences.getBool("station_mode", false);
     ap_ssid = preferences.getString("ap_ssid", "MiniKenterprise");
     ap_password = preferences.getString("ap_password", "IAmTheCaptainNow");
     sta_ssid = preferences.getString("sta_ssid", "NetworkName");
     sta_password = preferences.getString("sta_password", "Password");
-    preferences.end();
+
+    led_pin = preferences.getInt("led_pin", 4);
+    led_count = preferences.getInt("led_count", 8);
   }
 
   void saveSettings()
   {
     Serial.println("Saving Settings");
     preferences.begin("settings", false);
+    preferences.putBool("station_mode", station_mode);
     preferences.putString("ap_ssid", ap_ssid);
     preferences.putString("ap_password", ap_password);
     preferences.putString("sta_ssid", sta_ssid);
     preferences.putString("sta_password", sta_password);
+
     preferences.putUInt("motor1_pinA", motor1_pinA);
     preferences.putUInt("motor1_pinB", motor1_pinB);
     preferences.putUInt("motor1_pinE", motor1_pinE);
     preferences.putUInt("motor2_pinA", motor2_pinA);
     preferences.putUInt("motor2_pinB", motor2_pinB);
     preferences.putUInt("motor2_pinE", motor2_pinE);
-    preferences.end();
+
+    preferences.putInt("motor1_center", motor1_center);
+    preferences.putInt("motor1_max", motor1_max);
+    preferences.putInt("motor1_min", motor1_min);
+    preferences.putInt("motor2_center", motor2_center);
+    preferences.putInt("motor2_max", motor2_max);
+    preferences.putInt("motor2_min", motor2_min);
+
+    preferences.putString("steeringType", steeringType);
+    preferences.putString("motor2_driver", motor2_driver);
+    preferences.putString("motor1_driver", motor1_driver);
+
+    preferences.putInt("led_pin", led_pin);
+    preferences.putInt("led_count", led_count);
+
+    //preferences.end();
   }
 
   String getDrivingSystemSettings()
@@ -183,7 +227,16 @@ public:
                       "\"motor1_pinE\":" + String(motor1_pinE) + "," +
                       "\"motor1_pinA\":" + String(motor2_pinA) + "," +
                       "\"motor2_pinB\":" + String(motor2_pinB) + "," +
-                      "\"motor2_pinE\":" + String(motor2_pinE) +
+                      "\"motor2_pinE\":" + String(motor2_pinE) + "," +
+                      "\"motor1_center\":" + String(motor1_center) + "," +
+                      "\"motor1_max\":" + String(motor1_max) + "," +
+                      "\"motor1_min\":" + String(motor1_min) + "," +
+                      "\"motor2_center\":" + String(motor2_center) + "," +
+                      "\"motor2_max\":" + String(motor2_max) + "," +
+                      "\"motor2_min\":" + String(motor2_min) + "," +
+                      "\"steeringType\":\"" + steeringType + "\"," +
+                      "\"motor1_driver\":\"" + motor1_driver + "\"," +
+                      "\"motor2_driver\":\"" + motor2_driver + "\"" +
                       "}";
 
     return response;
@@ -211,13 +264,25 @@ public:
     motor2_pinB = doc["motor2_pinB"].as<uint8_t>();
     motor2_pinE = doc["motor2_pinE"].as<uint8_t>();
 
+    motor1_center = doc["motor1_center"].as<int>();
+    motor1_max = doc["motor1_max"].as<int>();
+    motor1_min = doc["motor1_min"].as<int>();
+    motor2_center = doc["motor2_center"].as<int>();
+    motor2_max = doc["motor2_max"].as<int>();
+    motor2_min = doc["motor2_min"].as<int>();
+
+    steeringType = doc["steeringType"].as<String>();
+    motor1_driver = doc["motor1_driver"].as<String>();
+    motor2_driver = doc["motor2_driver"].as<String>();
+
     Serial.println("Motor 1 Pin A: " + motor1_pinA);
     Serial.println("Motor 1 Pin B: " + motor1_pinB);
   }
 
   String getWifiSettings()
   {
-    String response = "{\"ap_ssid\": \"" +  ap_ssid     + "\"" + "," +
+  String response = "{\"station_mode\": " + String(station_mode) + "," +
+                      "\"ap_ssid\": \"" +  ap_ssid     + "\"" + "," +
                       "\"ap_password\": \"" + ap_password  + "\"" + "," +
                       "\"sta_ssid\": \"" + sta_ssid     + "\"" + "," +
                       "\"sta_password\": \"" + sta_password   + "\"}";
@@ -242,6 +307,8 @@ public:
       Serial.println(error.f_str());
       return;
     }
+
+    station_mode = doc["station_mode"].as<bool>();
     ap_ssid = doc["ap_ssid"].as<String>();
     ap_password = doc["ap_password"].as<String>();
     sta_ssid = doc["sta_ssid"].as<String>();
@@ -249,6 +316,36 @@ public:
 
     Serial.println("AP SSID: " + ap_ssid);
     Serial.println("AP Password: " + ap_password);
+  }
+
+  String getLedSettings()
+  {
+    String response = "{\"led_pin\": " + String(led_pin) + "," +
+                      "\"led_count\": " + String(led_count) + "}";
+    return response;
+  }
+
+  void parseLedSettings(String jsonString)
+  {
+    Serial.println("Parsing led settings");
+    StaticJsonDocument<200> doc;
+
+    // Deserialize the JSON document
+    DeserializationError error = deserializeJson(doc, jsonString);
+
+    // Test if parsing succeeds.
+    if (error)
+    {
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(error.f_str());
+      return;
+    }
+
+    led_pin = doc["led_pin"].as<int>();
+    led_count = doc["led_count"].as<int>();
+
+    Serial.println("LED Pin: " + led_pin);
+    Serial.println("LED Count: " + led_count);
   }
 };
 

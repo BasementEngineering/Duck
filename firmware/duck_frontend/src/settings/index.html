@@ -12,6 +12,9 @@
 
     <h2>WiFi</h2>
     <form id="wifi-form">
+        <label for="station_mode">Station Mode</label>
+        <input type="radio" id="station_mode" name="station_mode" value="0">
+        <p>Try to connect to an existing network on startup. Switch to AP mode, if that doesn't work.</p>
         <h3>Access Point Mode</h3>
         <p>Wifi settings for when the boat is the access point.</p>
         <br>
@@ -37,12 +40,15 @@
         <form id="driving-system-form"></form>
 
     <h2>LEDs</h2>
-    <form method="get">
-        <input id="input" type="hidden" name="json">
-        <div id="led-editor"></div>
-        <button id="send-drive-system-settings">Save</button>
+    <form id="led-form">
+        <label for="led_pin">LED Pin</label>
+        <input type="number" name="led_pin" id="led_pin" placeholder="4">
+        <br>
+        <label for="led_count">LED Count</label>
+        <input type="number" name="led_count" id="led_count" placeholder="8">
+        <br>
+        <button type="submit" id="send-led-settings">Save</button>
     </form>
-
 
     <script type="module" src="./settings.js"></script>
 

@@ -43,11 +43,23 @@ void FrontendServer_init(){
   server.on("/settings/drivingsystem", HTTP_POST, [](){
     String jsonString = server.arg("plain");
     settingsObject->parseDrivingSystemSettings(jsonString);
-    //settingsObject->saveSettings();
+    settingsObject->saveSettings();
     server.send(200, "text/plain", "Settings updated");
   });
   server.on("/settings/drivingsystem",HTTP_GET, [](){
     String response = settingsObject->getDrivingSystemSettings();
+    server.send(200, "application/json", response);
+  });
+
+  server.on("/settings/leds", HTTP_POST, [](){
+    String jsonString = server.arg("plain");
+    settingsObject->parseLedSettings(jsonString);
+    settingsObject->saveSettings();
+    server.send(200, "text/plain", "Settings updated");
+  });
+  server.on("/settings/leds",HTTP_GET, [](){
+    String response = settingsObject->getLedSettings();
+    settingsObject->saveSettings();
     server.send(200, "application/json", response);
   });
 
